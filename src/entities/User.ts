@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, Property} from "@mikro-orm/core";
+import { Entity, OptionalProps, PrimaryKey, Property} from "@mikro-orm/core";
 import { ObjectType, Field } from "type-graphql";
 
 @ObjectType()
@@ -24,7 +24,7 @@ export class User {
     @Property({ type: "text"})
     password!: string;
 
-
+    [OptionalProps]?: "password" | "updatedAt" | "createdAt";
 }
 
 
