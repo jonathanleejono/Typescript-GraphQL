@@ -3,13 +3,14 @@ import path from 'path';
 import { __prod__ } from "./constants";
 import { Post } from "./entities/Post";
 import dotenv from 'dotenv'
+import { User } from './entities/User';
 dotenv.config()
 
 const mikroOrmConfig: Options = {
     migrations: {
         path: path.join(__dirname, "./migrations")
     },
-    entities: [Post],
+    entities: [Post, User],
     dbName: "typescript-graphql",
     type: "postgresql",
     password: process.env.DB_PASSWORD,
