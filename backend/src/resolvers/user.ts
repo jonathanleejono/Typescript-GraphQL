@@ -11,6 +11,12 @@ import {
 } from "type-graphql";
 import argon2 from "argon2";
 
+// declare module "express-session" {
+//   export interface SessionData {
+//     userId: number;
+//   }
+// }
+
 @InputType()
 class UsernamePasswordInput {
   @Field()
@@ -42,7 +48,7 @@ export class UserResolver {
   @Mutation(() => UserResponse)
   async register(
     @Arg("options") options: UsernamePasswordInput,
-    @Ctx() { em }: MyContext
+    @Ctx() { em, req }: MyContext
   ): Promise<UserResponse> {
     if (options.username.length <= 2) {
       return {
@@ -84,13 +90,16 @@ export class UserResolver {
       }
       return error.message;
     }
+
+    req.session.userId = user.id;
+
     return { user };
   }
 
   @Mutation(() => UserResponse)
   async login(
     @Arg("options") options: UsernamePasswordInput,
-    @Ctx() { em }: MyContext
+    @Ctx() { em, req }: MyContext
   ): Promise<UserResponse> {
     const user = await em.findOne(User, { username: options.username });
     if (!user) {
@@ -105,6 +114,9 @@ export class UserResolver {
         errors: [{ field: "password", message: "incorrect password" }],
       };
     }
+
+    req.session.userId = user.id;
+
     return { user };
   }
 }
