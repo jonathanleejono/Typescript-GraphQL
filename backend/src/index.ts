@@ -7,31 +7,43 @@ import { HelloResolver } from "./resolvers/hello";
 import { PostsResolver } from "./resolvers/post";
 import mikroOrmConfig from "./mikro-orm.config";
 import { UserResolver } from "./resolvers/user";
-import dotenv from "dotenv";
-dotenv.config();
 // import Redis from "ioredis";
+// needs to use const redis = require("redis") with the legacy mode for tutorial to work
 const redis = require("redis");
-// import { createClient } from "redis";
+// import redis from "redis";
 
 import session from "express-session";
 import connectRedis from "connect-redis";
 import { __prod__ } from "./constants";
 import { MyContext } from "./types";
-// import cors from "cors";
+import cors from "cors";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const main = async () => {
   const orm = await MikroORM.init(mikroOrmConfig);
-  // await orm.getMigrator().up()
+  await orm.getMigrator().up();
 
   const app = express();
 
+  // needs legacy mode to be true to make it work for the tutorial
   const RedisStore = connectRedis(session);
-  const redisClient = redis.createClient({ legacyMode: true });
-  // const redis = new Redis("https://studio.apollographql.com");
+  const redisClient = redis.createClient({
+    legacyMode: true,
+  });
 
-  // await redisClient.connect();
+  // start redis-server, as well as DONT HAVE A SLASH AT THE END
+  // the slash at the end was because of the copy and paste from
+  // the studio apollo website
+  app.use(
+    cors({
+      origin: ["https://studio.apollographql.com"],
+      credentials: true,
+    })
+  );
 
-  // app.set("trust proxy", 1);
+  await redisClient.connect();
 
   // this needs to come before apollo for the session middleware
   // to be used inside of apollo
@@ -51,6 +63,10 @@ const main = async () => {
     })
   );
 
+  app.get("/", (_, res) => {
+    res.send("hello");
+  });
+
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
       resolvers: [HelloResolver, PostsResolver, UserResolver],
@@ -63,12 +79,7 @@ const main = async () => {
 
   apolloServer.applyMiddleware({
     app,
-    // cors: {
-    //   origin: ["https://studio.apollographql.com"],
-    //   credentials: true,
-    // },
-
-    // cors: false,
+    cors: false,
   });
 
   app.listen(4000, () => {
