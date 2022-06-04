@@ -10,6 +10,7 @@ import {
   ObjectType,
 } from "type-graphql";
 import argon2 from "argon2";
+import { EntityManager } from "@mikro-orm/postgresql";
 
 // declare module "express-session" {
 //   export interface SessionData {
@@ -71,11 +72,26 @@ export class UserResolver {
       };
     }
     const hashedPassword = await argon2.hash(options.password);
+
     const user = em.create(User, {
       username: options.username,
       password: hashedPassword,
     });
+
+    // let user;
+
     try {
+      // const result = await (em as EntityManager)
+      //   .createQueryBuilder(User)
+      //   .getKnexQuery()
+      //   .insert({
+      //     username: options.username,
+      //     password: hashedPassword,
+      //     created_at: new Date(),
+      //     updated_at: new Date(),
+      //   })
+      //   .returning("*");
+      // user = result[0];
       await em.persistAndFlush(user);
     } catch (error) {
       if (error.code === "23505") {
@@ -90,6 +106,8 @@ export class UserResolver {
       }
       return error.message;
     }
+
+    console.log("THE USER: ", user);
 
     req.session.userId = user.id;
 
