@@ -9,9 +9,15 @@ import {
 } from "@chakra-ui/react";
 import NextLink from "next/link";
 import { useState } from "react";
+import NavBar from "../components/NavBar";
 
 const Index = () => {
-  return <div>hello world1</div>;
+  return (
+    <>
+      <NavBar />
+      <div>hello world1</div>
+    </>
+  );
 };
 
 export default Index;
