@@ -1,35 +1,51 @@
 import "reflect-metadata";
-import { MikroORM } from "@mikro-orm/core";
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
 import { HelloResolver } from "./resolvers/hello";
 import { PostsResolver } from "./resolvers/post";
-import mikroOrmConfig from "./mikro-orm.config";
+
 import { UserResolver } from "./resolvers/user";
 import Redis from "ioredis";
-// needs to use const redis = require("redis") with the legacy mode for tutorial to work
-// const redis = require("redis");
-// import redis from "redis";
-
 import session from "express-session";
 import connectRedis from "connect-redis";
 import { COOKIE_NAME, __prod__ } from "./constants";
-import { MyContext } from "./types";
+
 import cors from "cors";
 import dotenv from "dotenv";
-// import { User } from "./entities/User";
+import { DataSource } from "typeorm";
+//type-graphql and typeorm need reflect-metadata to work
+import path from "path";
+
+// needs to use const redis = require("redis") with the legacy mode for tutorial to work
+// const redis = require("redis");
+
+import { User } from "./entities/User";
+import { Post } from "./entities/Post";
 
 dotenv.config();
 
-const main = async () => {
-  const orm = await MikroORM.init(mikroOrmConfig);
-  // await orm.em.nativeDelete(User, {});
-  await orm.getMigrator().up();
+export const AppDataSource = new DataSource({
+  type: "postgres",
+  host: "localhost",
+  port: 5432,
+  username: "postgres",
+  password: process.env.DB_PASSWORD,
+  database: "typescript-graphql2",
+  synchronize: true,
+  logging: true,
+  entities: [User, Post],
+  // subscribers: [],
+  migrations: [path.join(__dirname, "./migrations/*")],
+});
 
+const main = async () => {
   const app = express();
 
-  // needs legacy mode to be true to make it work for the tutorial
+  await AppDataSource.initialize();
+
+  await Post.delete({});
+
   const RedisStore = connectRedis(session);
   const redis = new Redis();
 
@@ -42,10 +58,6 @@ const main = async () => {
       credentials: true,
     })
   );
-
-  // only need this for the const redis = require("redis") legacy one,
-  // not used for the ioredis one
-  // await redisClient.connect();
 
   // this needs to come before apollo for the session middleware
   // to be used inside of apollo
@@ -74,8 +86,7 @@ const main = async () => {
       resolvers: [HelloResolver, PostsResolver, UserResolver],
       validate: false,
     }),
-    context: ({ req, res }: MyContext): MyContext => ({
-      em: orm.em,
+    context: ({ req, res }) => ({
       req,
       res,
       redis,

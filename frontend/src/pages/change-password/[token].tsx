@@ -14,7 +14,8 @@ import { useChangePasswordMutation } from "../../generated/graphql";
 import { createUrqlClient } from "../../utils/createUrqlClient";
 import { toErrorMap } from "../../utils/toErrorMap";
 
-const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
+const ChangePassword: NextPage<{ token: string }> = () => {
+  // pass in the {token} within the function here...^ , for ssr
   const router = useRouter();
   const [, changePassword] = useChangePasswordMutation();
   const [tokenError, setTokenError] = useState("");
@@ -25,7 +26,8 @@ const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
         onSubmit={async (values, { setErrors }) => {
           const response = await changePassword({
             newPassword: values.newPassword,
-            token,
+            token:
+              typeof router.query.token === "string" ? router.query.token : "",
           });
           console.log(response);
           if (response.data?.changePassword.errors) {
@@ -74,11 +76,13 @@ const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
 };
 
 //grabbing url token, or rather these are query params
-
-ChangePassword.getInitialProps = ({ query }) => {
-  return {
-    token: query.token as string,
-  };
-};
+// if you wanted to server side render the page based on query param,
+// use get initial props, where you pass in token in ChangePassword
+// ChangePassword.getInitialProps = ({ query }) => {
+//   return {
+//     token: query.token as string,
+//   };
+// };
+// timestamp: 6:30:15
 
 export default withUrqlClient(createUrqlClient)(ChangePassword);
