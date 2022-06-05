@@ -44,6 +44,8 @@ const main = async () => {
 
   await AppDataSource.initialize();
 
+  await Post.delete({});
+
   const RedisStore = connectRedis(session);
   const redis = new Redis();
 
