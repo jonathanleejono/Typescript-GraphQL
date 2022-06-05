@@ -7,31 +7,31 @@ import { HelloResolver } from "./resolvers/hello";
 import { PostsResolver } from "./resolvers/post";
 import mikroOrmConfig from "./mikro-orm.config";
 import { UserResolver } from "./resolvers/user";
-// import Redis from "ioredis";
+import Redis from "ioredis";
 // needs to use const redis = require("redis") with the legacy mode for tutorial to work
-const redis = require("redis");
+// const redis = require("redis");
 // import redis from "redis";
 
 import session from "express-session";
 import connectRedis from "connect-redis";
-import { __prod__ } from "./constants";
+import { COOKIE_NAME, __prod__ } from "./constants";
 import { MyContext } from "./types";
 import cors from "cors";
 import dotenv from "dotenv";
+// import { User } from "./entities/User";
 
 dotenv.config();
 
 const main = async () => {
   const orm = await MikroORM.init(mikroOrmConfig);
+  // await orm.em.nativeDelete(User, {});
   await orm.getMigrator().up();
 
   const app = express();
 
   // needs legacy mode to be true to make it work for the tutorial
   const RedisStore = connectRedis(session);
-  const redisClient = redis.createClient({
-    legacyMode: true,
-  });
+  const redis = new Redis();
 
   // start redis-server, as well as DONT HAVE A SLASH AT THE END
   // the slash at the end was because of the copy and paste from
@@ -43,14 +43,16 @@ const main = async () => {
     })
   );
 
-  await redisClient.connect();
+  // only need this for the const redis = require("redis") legacy one,
+  // not used for the ioredis one
+  // await redisClient.connect();
 
   // this needs to come before apollo for the session middleware
   // to be used inside of apollo
   app.use(
     session({
-      name: "qid",
-      store: new RedisStore({ client: redisClient, disableTouch: true }),
+      name: COOKIE_NAME,
+      store: new RedisStore({ client: redis, disableTouch: true }),
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
         httpOnly: true,
@@ -72,7 +74,12 @@ const main = async () => {
       resolvers: [HelloResolver, PostsResolver, UserResolver],
       validate: false,
     }),
-    context: ({ req, res }: MyContext): MyContext => ({ em: orm.em, req, res }),
+    context: ({ req, res }: MyContext): MyContext => ({
+      em: orm.em,
+      req,
+      res,
+      redis,
+    }),
   });
 
   await apolloServer.start();

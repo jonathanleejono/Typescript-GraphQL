@@ -6,7 +6,7 @@ import { MyContext } from "../types";
 export class PostsResolver {
   //query is for retrieving data
   @Query(() => [Post])
-  posts(@Ctx() { em }: MyContext): Promise<Post[]> {
+  async posts(@Ctx() { em }: MyContext): Promise<Post[]> {
     return em.find(Post, {});
   }
 
