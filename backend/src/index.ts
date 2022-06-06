@@ -20,6 +20,7 @@ import path from "path";
 import { User } from "./entities/User";
 import { Post } from "./entities/Post";
 import { MyContext } from "./types";
+import { Updoot } from "./entities/Updoot";
 
 dotenv.config();
 
@@ -32,7 +33,7 @@ export const AppDataSource = new DataSource({
   database: "typescript-graphql2",
   synchronize: true,
   logging: true,
-  entities: [User, Post],
+  entities: [User, Post, Updoot],
   // subscribers: [],
   migrations: [path.join(__dirname, "./migrations/*")],
 });
@@ -49,7 +50,11 @@ const main = async () => {
 
   app.use(
     cors({
-      origin: ["https://studio.apollographql.com", "http://localhost:3000"],
+      origin: [
+        "https://studio.apollographql.com",
+        "http://localhost:3000",
+        "http://localhost:4000/graphql",
+      ],
       credentials: true,
     })
   );
@@ -66,8 +71,8 @@ const main = async () => {
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
         httpOnly: true,
-        sameSite: __prod__ ? "lax" : "none", //must be none for apollo studio
-        secure: __prod__, //must be true for apollo studio
+        sameSite: "none", //must be hard coded -> none for apollo studio
+        secure: true, //must be hard coded -> true for apollo studio
       },
       secret: "dsdsdsdaq2E2ZPownuwwkyyi",
       resave: false,

@@ -8,4 +8,6 @@ export type MyContext = {
   };
   res: Response;
   redis: Redis;
+  // userLoader: ReturnType<typeof createUserLoader>;
+  // updootLoader: ReturnType<typeof createUpdootLoader>;
 };
