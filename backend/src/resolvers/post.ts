@@ -4,13 +4,26 @@ import {
   Arg,
   Ctx,
   Field,
+  FieldResolver,
   InputType,
+  Int,
   Mutation,
+  ObjectType,
   Query,
   Resolver,
+  Root,
   UseMiddleware,
 } from "type-graphql";
 import { Post } from "../entities/Post";
+import { AppDataSource } from "../index";
+
+@ObjectType()
+class PaginatedPosts {
+  @Field(() => [Post])
+  posts: Post[];
+  @Field()
+  hasMore: boolean;
+}
 
 @InputType()
 class PostInput {
@@ -20,11 +33,35 @@ class PostInput {
   text: string;
 }
 
-@Resolver()
+@Resolver(Post)
 export class PostsResolver {
+  @FieldResolver(() => String)
+  textSnippet(@Root() post: Post) {
+    return post.text.slice(0, 50);
+  }
+
   @Query(() => [Post])
-  async posts(): Promise<Post[]> {
-    return Post.find();
+  async posts(
+    @Arg("limit", () => Int) limit: number,
+    @Arg("cursor", () => String, { nullable: true }) cursor: string | null
+  ): Promise<Post[]> {
+    const realLimit = Math.min(50, limit);
+    // const realLimitPlusOne = realLimit + 1;
+
+    // const replacements: any[] = [reaLimitPlusOne];
+
+    // if (cursor) {
+    //   replacements.push(new Date(parseInt(cursor)));
+    const qb = await AppDataSource.getRepository(Post)
+      .createQueryBuilder("p")
+      .orderBy('p."createdAt"', "DESC")
+      .take(realLimit);
+    if (cursor) {
+      qb.where('"createdAt" < :cursor', {
+        cursor: new Date(parseInt(cursor)),
+      });
+    }
+    return qb.getMany();
   }
 
   @Query(() => Post, { nullable: true })
@@ -34,7 +71,7 @@ export class PostsResolver {
 
   //mutation is for insert, updating, or removing data (ie. altering data on the server)
   @Mutation(() => Post)
-  @UseMiddleware(isAuth)
+  // @UseMiddleware(isAuth)
   async createPost(
     @Arg("input") input: PostInput,
     @Ctx() { req }: MyContext

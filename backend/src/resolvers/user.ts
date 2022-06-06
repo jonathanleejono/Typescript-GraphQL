@@ -36,7 +36,7 @@ class UserResponse {
   user?: User;
 }
 
-@Resolver()
+@Resolver(User)
 export class UserResolver {
   @Mutation(() => UserResponse)
   async changePassword(
@@ -200,6 +200,8 @@ export class UserResolver {
         errors: [{ field: "password", message: "incorrect password" }],
       };
     }
+
+    console.log("THE USER: ", user);
 
     req.session.userId = user.id;
 

@@ -1,5 +1,6 @@
-import "reflect-metadata";
 import express from "express";
+//type-graphql and typeorm need reflect-metadata to work
+import "reflect-metadata";
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
 import { HelloResolver } from "./resolvers/hello";
@@ -14,14 +15,11 @@ import { COOKIE_NAME, __prod__ } from "./constants";
 import cors from "cors";
 import dotenv from "dotenv";
 import { DataSource } from "typeorm";
-//type-graphql and typeorm need reflect-metadata to work
 import path from "path";
-
-// needs to use const redis = require("redis") with the legacy mode for tutorial to work
-// const redis = require("redis");
 
 import { User } from "./entities/User";
 import { Post } from "./entities/Post";
+import { MyContext } from "./types";
 
 dotenv.config();
 
@@ -44,20 +42,20 @@ const main = async () => {
 
   await AppDataSource.initialize();
 
-  await Post.delete({});
+  await AppDataSource.runMigrations();
 
   const RedisStore = connectRedis(session);
   const redis = new Redis();
 
-  // start redis-server, as well as DONT HAVE A SLASH AT THE END
-  // the slash at the end was because of the copy and paste from
-  // the studio apollo website
   app.use(
     cors({
       origin: ["https://studio.apollographql.com", "http://localhost:3000"],
       credentials: true,
     })
   );
+
+  //this must be here for apollo studio
+  app.set("trust proxy", process.env.NODE_ENV !== "production");
 
   // this needs to come before apollo for the session middleware
   // to be used inside of apollo
@@ -68,8 +66,8 @@ const main = async () => {
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
         httpOnly: true,
-        sameSite: "lax", //csrf
-        secure: __prod__, //cookie only works in https
+        sameSite: __prod__ ? "lax" : "none", //must be none for apollo studio
+        secure: __prod__, //must be true for apollo studio
       },
       secret: "dsdsdsdaq2E2ZPownuwwkyyi",
       resave: false,
@@ -86,7 +84,7 @@ const main = async () => {
       resolvers: [HelloResolver, PostsResolver, UserResolver],
       validate: false,
     }),
-    context: ({ req, res }) => ({
+    context: ({ req, res }): MyContext => ({
       req,
       res,
       redis,
