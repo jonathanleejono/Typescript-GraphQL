@@ -19,6 +19,9 @@ import {
 import gql from "graphql-tag";
 import { betterUpdateQuery } from "./betterUpdateQuery";
 import { isServer } from "./isServer";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const errorExchange: Exchange =
   ({ forward }) =>
@@ -88,7 +91,7 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
   }
 
   return {
-    url: "http://localhost:4000/graphql",
+    url: process.env.NEXT_PUBLIC_API_URL as string,
     fetchOptions: {
       credentials: "include" as const,
       headers: cookie
