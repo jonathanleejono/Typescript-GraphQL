@@ -21,6 +21,8 @@ import { User } from "./entities/User";
 import { Post } from "./entities/Post";
 import { MyContext } from "./types";
 import { Updoot } from "./entities/Updoot";
+import { createUserLoader } from "./utils/createUserLoader";
+import { createUpdootLoader } from "./utils/createUpdootLoader";
 
 dotenv.config();
 
@@ -48,19 +50,15 @@ const main = async () => {
   const RedisStore = connectRedis(session);
   const redis = new Redis();
 
+  //this must be here for apollo studio
+  app.set("trust proxy", process.env.NODE_ENV !== "production");
+
   app.use(
     cors({
-      origin: [
-        "https://studio.apollographql.com",
-        "http://localhost:3000",
-        "http://localhost:4000/graphql",
-      ],
+      origin: ["https://studio.apollographql.com", "http://localhost:3000"],
       credentials: true,
     })
   );
-
-  //this must be here for apollo studio
-  app.set("trust proxy", process.env.NODE_ENV !== "production");
 
   // this needs to come before apollo for the session middleware
   // to be used inside of apollo
@@ -70,7 +68,7 @@ const main = async () => {
       store: new RedisStore({ client: redis, disableTouch: true }),
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
-        httpOnly: true,
+        httpOnly: false,
         sameSite: "none", //must be hard coded -> none for apollo studio
         secure: true, //must be hard coded -> true for apollo studio
       },
@@ -93,6 +91,8 @@ const main = async () => {
       req,
       res,
       redis,
+      userLoader: createUserLoader(),
+      updootLoader: createUpdootLoader(),
     }),
   });
 

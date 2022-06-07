@@ -19,39 +19,41 @@ const CreatePost: React.FC<{}> = ({}) => {
   const [, createPost] = useCreatePostMutation();
 
   return (
-    <Layout variant="small">
-      <Formik
-        initialValues={{ title: "", text: "" }}
-        onSubmit={async (values) => {
-          const { error } = await createPost({ input: values });
-          if (!error) router.push("/");
-          console.log(values);
-        }}
-      >
-        {({ isSubmitting }) => (
-          <Form>
-            <InputField name="title" placeholder="title" label="Title" />
-            <Box mt={4}>
-              <InputField
-                textarea
-                name="text"
-                placeholder="text..."
-                label="Body"
-              />
-            </Box>
+    <div>
+      <Layout variant="small">
+        <Formik
+          initialValues={{ title: "", text: "" }}
+          onSubmit={async (values) => {
+            const { error } = await createPost({ input: values });
+            if (!error) router.push("/");
+            console.log(values);
+          }}
+        >
+          {({ isSubmitting }) => (
+            <Form>
+              <InputField name="title" placeholder="title" label="Title" />
+              <Box mt={4}>
+                <InputField
+                  textarea
+                  name="text"
+                  placeholder="text..."
+                  label="Body"
+                />
+              </Box>
 
-            <Button
-              type="submit"
-              colorScheme="teal"
-              mt={4}
-              isLoading={isSubmitting}
-            >
-              Create Post
-            </Button>
-          </Form>
-        )}
-      </Formik>
-    </Layout>
+              <Button
+                type="submit"
+                colorScheme="teal"
+                mt={4}
+                isLoading={isSubmitting}
+              >
+                Create Post
+              </Button>
+            </Form>
+          )}
+        </Formik>
+      </Layout>
+    </div>
   );
 };
 

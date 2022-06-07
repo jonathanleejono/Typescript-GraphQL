@@ -17,6 +17,7 @@ import {
 import { Post } from "../entities/Post";
 import { AppDataSource } from "../index";
 import { Updoot } from "../entities/Updoot";
+import { User } from "../entities/User";
 
 @ObjectType()
 class PaginatedPosts {
@@ -41,22 +42,27 @@ export class PostsResolver {
     return post.text.slice(0, 50);
   }
 
-  // @FieldResolver(() => Int, { nullable: true })
-  // async voteStatus(
-  //   @Root() post: Post,
-  //   @Ctx() { updootLoader, req }: MyContext
-  // ) {
-  //   if (!req.session.userId) {
-  //     return null;
-  //   }
+  @FieldResolver(() => User)
+  creator(@Root() post: Post, @Ctx() { userLoader }: MyContext) {
+    return userLoader.load(post.creatorId);
+  }
 
-  //   const updoot = await updootLoader.load({
-  //     postId: post.id,
-  //     userId: req.session.userId,
-  //   });
+  @FieldResolver(() => Int, { nullable: true })
+  async voteStatus(
+    @Root() post: Post,
+    @Ctx() { updootLoader, req }: MyContext
+  ) {
+    if (!req.session.userId) {
+      return null;
+    }
 
-  //   return updoot ? updoot.value : null;
-  // }
+    const updoot = await updootLoader.load({
+      postId: post.id,
+      userId: req.session.userId,
+    });
+
+    return updoot ? updoot.value : null;
+  }
 
   @Mutation(() => Boolean)
   @UseMiddleware(isAuth)
@@ -125,7 +131,8 @@ export class PostsResolver {
   @Query(() => PaginatedPosts)
   async posts(
     @Arg("limit", () => Int) limit: number,
-    @Arg("cursor", () => String, { nullable: true }) cursor: string | null
+    @Arg("cursor", () => String, { nullable: true }) cursor: string | null,
+    @Ctx() { req }: MyContext
   ): Promise<PaginatedPosts> {
     //the logic is if there's 1 more post above the limit,
     //then there's more posts (hence hasMore), timestamp ~7:40:00
@@ -140,14 +147,8 @@ export class PostsResolver {
 
     const posts = await AppDataSource.query(
       `
-    select p.*,
-    json_build_object(
-      'id', u.id,
-      'username', u.username,
-      'email', u.email
-    ) creator
+    select p.*
      from post p
-     inner join public.user u on u.id = p."creatorId"
     ${cursor ? `where p."createdAt" < $2` : ""}
     order by p."createdAt" DESC
     limit $1
@@ -176,7 +177,7 @@ export class PostsResolver {
   }
 
   @Query(() => Post, { nullable: true })
-  post(@Arg("id") id: number): Promise<Post | null> {
+  post(@Arg("id", () => Int) id: number): Promise<Post | null> {
     return Post.findOne({ where: { id } });
   }
 
@@ -191,23 +192,33 @@ export class PostsResolver {
   }
 
   @Mutation(() => Post, { nullable: true })
+  @UseMiddleware(isAuth)
   async updatePost(
-    @Arg("id") id: number,
-    @Arg("title", { nullable: true }) title: string
+    @Arg("id", () => Int) id: number,
+    @Arg("title") title: string,
+    @Arg("text") text: string,
+    @Ctx() { req }: MyContext
   ): Promise<Post | null> {
-    const post = await Post.findOne({ where: { id } });
+    const result = await AppDataSource.createQueryBuilder()
+      .update(Post)
+      .set({ title, text })
+      .where('id = :id and "creatorId" = :creatorId', {
+        id,
+        creatorId: req.session.userId,
+      })
+      .returning("*")
+      .execute();
 
-    if (!post) return null;
-
-    if (typeof title !== "undefined") {
-      await Post.update({ id }, { title });
-    }
-    return post;
+    return result.raw[0];
   }
 
   @Mutation(() => Boolean)
-  async deletePost(@Arg("id") id: number): Promise<boolean> {
-    await Post.delete(id);
+  @UseMiddleware(isAuth)
+  async deletePost(
+    @Arg("id", () => Int) id: number,
+    @Ctx() { req }: MyContext
+  ): Promise<boolean> {
+    await Post.delete({ id, creatorId: req.session.userId });
     return true;
   }
 }

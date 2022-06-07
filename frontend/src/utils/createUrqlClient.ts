@@ -8,6 +8,7 @@ import {
 } from "urql";
 import { pipe, tap } from "wonka";
 import {
+  DeletePostMutationVariables,
   LoginMutation,
   LogoutMutation,
   MeDocument,
@@ -80,6 +81,8 @@ function invalidateAllPosts(cache: Cache) {
 export const createUrqlClient = (ssrExchange: any, ctx: any) => {
   let cookie = "";
 
+  console.log("ctx HELLO: ", ctx);
+
   if (isServer()) {
     cookie = ctx?.req?.headers?.cookie;
   }
@@ -107,6 +110,12 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
         },
         updates: {
           Mutation: {
+            deletePost: (_result, args, cache, info) => {
+              cache.invalidate({
+                __typename: "Post",
+                id: (args as DeletePostMutationVariables).id,
+              });
+            },
             vote: (_result, args, cache, info) => {
               const { postId, value } = args as VoteMutationVariables;
               const data = cache.readFragment(
@@ -137,6 +146,7 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
                 );
               }
             },
+            //fine-end 9:49:36
             createPost: (_result, args, cache, info) => {
               invalidateAllPosts(cache);
             },
@@ -163,6 +173,7 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
                   }
                 }
               );
+              invalidateAllPosts(cache);
             },
             register: (_result, args, cache, info) => {
               betterUpdateQuery<RegisterMutation, MeQuery>(
