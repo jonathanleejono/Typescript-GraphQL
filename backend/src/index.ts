@@ -33,6 +33,7 @@ export const AppDataSource = new DataSource({
 });
 
 const main = async () => {
+  // test, hello?
   const app = express();
 
   await AppDataSource.initialize();
