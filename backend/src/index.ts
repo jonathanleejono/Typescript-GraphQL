@@ -1,42 +1,34 @@
-import express from "express";
-//type-graphql and typeorm need reflect-metadata to work
-import "reflect-metadata";
 import { ApolloServer } from "apollo-server-express";
-import { buildSchema } from "type-graphql";
-import { HelloResolver } from "./resolvers/hello";
-import { PostsResolver } from "./resolvers/post";
-
-import { UserResolver } from "./resolvers/user";
-import Redis from "ioredis";
-import session from "express-session";
 import connectRedis from "connect-redis";
-import { COOKIE_NAME, __prod__ } from "./constants";
-
 import cors from "cors";
 import dotenv from "dotenv";
-import { DataSource } from "typeorm";
+import express from "express";
+import session from "express-session";
+import Redis from "ioredis";
 import path from "path";
-
-import { User } from "./entities/User";
+//type-graphql and typeorm need reflect-metadata to work
+import "reflect-metadata";
+import { buildSchema } from "type-graphql";
+import { DataSource } from "typeorm";
+import { COOKIE_NAME, __prod__ } from "./constants";
 import { Post } from "./entities/Post";
-import { MyContext } from "./types";
 import { Updoot } from "./entities/Updoot";
-import { createUserLoader } from "./utils/createUserLoader";
+import { User } from "./entities/User";
+import { HelloResolver } from "./resolvers/hello";
+import { PostsResolver } from "./resolvers/post";
+import { UserResolver } from "./resolvers/user";
+import { MyContext } from "./types";
 import { createUpdootLoader } from "./utils/createUpdootLoader";
+import { createUserLoader } from "./utils/createUserLoader";
 
 dotenv.config();
 
 export const AppDataSource = new DataSource({
   type: "postgres",
-  host: "localhost",
-  port: 5432,
-  username: "postgres",
-  password: process.env.DB_PASSWORD,
-  database: "typescript-graphql2",
+  url: process.env.DB_URL,
   synchronize: true,
   logging: true,
   entities: [User, Post, Updoot],
-  // subscribers: [],
   migrations: [path.join(__dirname, "./migrations/*")],
 });
 
@@ -48,14 +40,16 @@ const main = async () => {
   await AppDataSource.runMigrations();
 
   const RedisStore = connectRedis(session);
-  const redis = new Redis();
+  const redis = new Redis(process.env.REDIS_URL);
 
   //this must be here for apollo studio
   app.set("trust proxy", process.env.NODE_ENV !== "production");
 
+  // https://studio.apollographql.com
+
   app.use(
     cors({
-      origin: ["https://studio.apollographql.com", "http://localhost:3000"],
+      origin: process.env.CORS_ORIGIN,
       credentials: true,
     })
   );
@@ -68,19 +62,16 @@ const main = async () => {
       store: new RedisStore({ client: redis, disableTouch: true }),
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
-        httpOnly: false,
+        httpOnly: true,
         sameSite: "none", //must be hard coded -> none for apollo studio
         secure: true, //must be hard coded -> true for apollo studio
+        domain: __prod__ ? ".verceldomain" : undefined,
       },
-      secret: "dsdsdsdaq2E2ZPownuwwkyyi",
+      secret: process.env.SECRET,
       resave: false,
       saveUninitialized: false,
     })
   );
-
-  app.get("/", (_, res) => {
-    res.send("hello");
-  });
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
@@ -103,8 +94,10 @@ const main = async () => {
     cors: false,
   });
 
-  app.listen(4000, () => {
-    console.log("server started on localhost:4000");
+  const port = parseInt(process.env.PORT);
+
+  app.listen(port, () => {
+    console.log(`server started on listening ${port}`);
   });
 };
 
