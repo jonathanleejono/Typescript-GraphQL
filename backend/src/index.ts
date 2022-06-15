@@ -121,6 +121,13 @@ const main = async () => {
   //   secure: false, //must be hard coded -> true for apollo studio
   // },
 
+  // cookie: {
+  //       maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
+  //       httpOnly: true,
+  //       sameSite: "none", //must be hard coded -> none for apollo studio
+  //       secure: true, //must be hard coded -> true for apollo studio
+  //     },
+
   // this needs to come before apollo for the session middleware
   // to be used inside of apollo
   app.use(
@@ -129,7 +136,7 @@ const main = async () => {
       store: new RedisStore({ client: redis, disableTouch: true }),
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
-        httpOnly: true,
+        httpOnly: false,
         sameSite: "none", //must be hard coded -> none for apollo studio
         secure: true, //must be hard coded -> true for apollo studio
       },
