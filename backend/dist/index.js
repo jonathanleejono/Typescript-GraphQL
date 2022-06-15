@@ -32,12 +32,10 @@ exports.AppDataSource = new typeorm_1.DataSource({
     logging: true,
     entities: [User_1.User, Post_1.Post, Updoot_1.Updoot],
     migrations: [path_1.default.join(__dirname, "./migrations/*")],
-    ssl: { rejectUnauthorized: false },
 });
 const main = async () => {
     const app = (0, express_1.default)();
     await exports.AppDataSource.initialize();
-    await exports.AppDataSource.runMigrations();
     const RedisStore = (0, connect_redis_1.default)(express_session_1.default);
     const redis = new ioredis_1.default(process.env.REDIS_URL);
     app.set("trust proxy", process.env.NODE_ENV !== "production");
@@ -53,7 +51,7 @@ const main = async () => {
         store: new RedisStore({ client: redis, disableTouch: true }),
         cookie: {
             maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
-            httpOnly: true,
+            httpOnly: false,
             sameSite: "lax",
             secure: true,
         },

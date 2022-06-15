@@ -30,7 +30,7 @@ export const AppDataSource = new DataSource({
   logging: true,
   entities: [User, Post, Updoot],
   migrations: [path.join(__dirname, "./migrations/*")],
-  ssl: { rejectUnauthorized: false },
+  // ssl: { rejectUnauthorized: false },
 });
 
 const main = async () => {
@@ -38,7 +38,7 @@ const main = async () => {
 
   await AppDataSource.initialize();
 
-  await AppDataSource.runMigrations();
+  // await AppDataSource.runMigrations();
 
   const RedisStore = connectRedis(session);
   const redis = new Redis(process.env.REDIS_URL);
@@ -82,7 +82,7 @@ const main = async () => {
       store: new RedisStore({ client: redis, disableTouch: true }),
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
-        httpOnly: true,
+        httpOnly: false,
         sameSite: "lax", //must be hard coded -> none for apollo studio
         secure: true, //must be hard coded -> true for apollo studio
       },
