@@ -40,10 +40,7 @@ const main = async () => {
     const redis = new ioredis_1.default(process.env.REDIS_URL);
     app.set("trust proxy", process.env.NODE_ENV !== "production");
     app.use((0, cors_1.default)({
-        origin: [
-            process.env.CORS_ORIGIN,
-            "https://studio.apollographql.com",
-        ],
+        origin: process.env.CORS_ORIGIN,
         credentials: true,
     }));
     app.use((0, express_session_1.default)({
