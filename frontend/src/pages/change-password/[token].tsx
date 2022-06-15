@@ -1,5 +1,5 @@
 import { Box, Button, Flex, Link } from "@chakra-ui/react";
-import { Formik, Form } from "formik";
+import { Form, Formik } from "formik";
 import { NextPage } from "next";
 import { withUrqlClient } from "next-urql";
 import NextLink from "next/link";
