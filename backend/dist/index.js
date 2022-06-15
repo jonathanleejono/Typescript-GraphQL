@@ -51,7 +51,7 @@ const main = async () => {
             maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
             httpOnly: false,
             sameSite: "lax",
-            secure: true,
+            secure: false,
         },
         secret: process.env.SECRET,
         resave: false,
