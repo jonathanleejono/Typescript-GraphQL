@@ -49,9 +49,9 @@ const main = async () => {
         store: new RedisStore({ client: redis, disableTouch: true }),
         cookie: {
             maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
-            httpOnly: false,
-            sameSite: "strict",
-            secure: false,
+            httpOnly: true,
+            sameSite: "none",
+            secure: true,
         },
         secret: process.env.SECRET,
         resave: false,

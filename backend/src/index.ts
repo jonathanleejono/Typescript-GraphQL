@@ -129,9 +129,9 @@ const main = async () => {
       store: new RedisStore({ client: redis, disableTouch: true }),
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
-        httpOnly: false,
-        sameSite: "strict", //must be hard coded -> none for apollo studio
-        secure: false, //must be hard coded -> true for apollo studio
+        httpOnly: true,
+        sameSite: "none", //must be hard coded -> none for apollo studio
+        secure: true, //must be hard coded -> true for apollo studio
       },
       secret: process.env.SECRET,
       resave: false,
