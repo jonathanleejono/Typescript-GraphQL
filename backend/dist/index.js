@@ -41,8 +41,8 @@ const main = async () => {
     app.set("trust proxy", process.env.NODE_ENV !== "production");
     app.use((0, cors_1.default)({
         origin: [
-            "https://studio.apollographql.com",
             process.env.CORS_ORIGIN,
+            "https://studio.apollographql.com",
         ],
         credentials: true,
     }));
