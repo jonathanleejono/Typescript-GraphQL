@@ -51,8 +51,8 @@ const main = async () => {
   app.use(
     cors({
       origin: [
-        "https://studio.apollographql.com",
         process.env.CORS_ORIGIN as string,
+        "https://studio.apollographql.com",
       ],
       credentials: true,
     })
@@ -73,6 +73,14 @@ const main = async () => {
   // sameSite: "none",
   // secure: false,
   // ^^that works for postman --> make sure to delete existing cookie to reset
+
+  // prod:
+  // cookie: {
+  //   maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
+  //   httpOnly: false,
+  //   sameSite: "lax", //must be hard coded -> none for apollo studio
+  //   secure: true, //must be hard coded -> true for apollo studio
+  // },
 
   // this needs to come before apollo for the session middleware
   // to be used inside of apollo
