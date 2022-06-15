@@ -55,6 +55,8 @@ const main = async () => {
     })
   );
 
+  // USE npm run watch whenever changes happen
+
   // IMPORTANT NOTES - set everything below to be like this:
   // httpOnly: false,
   // sameSite: "lax",
@@ -78,7 +80,7 @@ const main = async () => {
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
         httpOnly: false,
-        sameSite: "none", //must be hard coded -> none for apollo studio
+        sameSite: "lax", //must be hard coded -> none for apollo studio
         secure: false, //must be hard coded -> true for apollo studio
       },
       secret: process.env.SECRET,
