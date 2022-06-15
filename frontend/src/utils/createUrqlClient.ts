@@ -84,8 +84,6 @@ function invalidateAllPosts(cache: Cache) {
 export const createUrqlClient = (ssrExchange: any, ctx: any) => {
   let cookie = "";
 
-  console.log("ctx HELLO: ", ctx);
-
   if (isServer()) {
     cookie = ctx?.req?.headers?.cookie;
   }
