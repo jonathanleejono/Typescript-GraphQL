@@ -1,5 +1,3 @@
-import { isAuth } from "../middleware/isAuth";
-import { MyContext } from "../types";
 import {
   Arg,
   Ctx,
@@ -15,9 +13,11 @@ import {
   UseMiddleware,
 } from "type-graphql";
 import { Post } from "../entities/Post";
-import { AppDataSource } from "../index";
 import { Updoot } from "../entities/Updoot";
 import { User } from "../entities/User";
+import { AppDataSource } from "../index";
+import { isAuth } from "../middleware/isAuth";
+import { MyContext } from "../types";
 
 @ObjectType()
 class PaginatedPosts {
@@ -131,8 +131,7 @@ export class PostsResolver {
   @Query(() => PaginatedPosts)
   async posts(
     @Arg("limit", () => Int) limit: number,
-    @Arg("cursor", () => String, { nullable: true }) cursor: string | null,
-    @Ctx() { req }: MyContext
+    @Arg("cursor", () => String, { nullable: true }) cursor: string | null
   ): Promise<PaginatedPosts> {
     //the logic is if there's 1 more post above the limit,
     //then there's more posts (hence hasMore), timestamp ~7:40:00
