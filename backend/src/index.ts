@@ -25,15 +25,15 @@ dotenv.config();
 
 export const AppDataSource = new DataSource({
   type: "postgres",
-  url: process.env.DB_URL,
+  url: process.env.DATABASE_URL as string,
   synchronize: true,
   logging: true,
   entities: [User, Post, Updoot],
   migrations: [path.join(__dirname, "./migrations/*")],
+  // ssl: { rejectUnauthorized: false },
 });
 
 const main = async () => {
-  // test, hello?
   const app = express();
 
   await AppDataSource.initialize();
@@ -55,6 +55,20 @@ const main = async () => {
     })
   );
 
+  // IMPORTANT NOTES - set everything below to be like this:
+  // httpOnly: false,
+  // sameSite: "lax",
+  // secure: false,
+  // ^^this allows the cookie to be set in browser on localhost:3000
+  // httpOnly: true OR false,
+  // sameSite: "none",
+  // secure: true,
+  // ^^that works for apollo studio
+  // httpOnly: true OR false,
+  // sameSite: "none",
+  // secure: false,
+  // ^^that works for postman --> make sure to delete existing cookie to reset
+
   // this needs to come before apollo for the session middleware
   // to be used inside of apollo
   app.use(
@@ -63,16 +77,19 @@ const main = async () => {
       store: new RedisStore({ client: redis, disableTouch: true }),
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
-        httpOnly: true,
+        httpOnly: false,
         sameSite: "none", //must be hard coded -> none for apollo studio
-        secure: true, //must be hard coded -> true for apollo studio
-        domain: __prod__ ? ".verceldomain" : undefined,
+        secure: false, //must be hard coded -> true for apollo studio
       },
       secret: process.env.SECRET,
       resave: false,
       saveUninitialized: false,
     })
   );
+
+  app.get("/ping", (_, res) => {
+    res.send("pong!!");
+  });
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
