@@ -30,7 +30,7 @@ export const AppDataSource = new DataSource({
   logging: true,
   entities: [User, Post, Updoot],
   migrations: [path.join(__dirname, "./migrations/*")],
-  // ssl: { rejectUnauthorized: false },
+  ssl: { rejectUnauthorized: false },
 });
 
 const main = async () => {
