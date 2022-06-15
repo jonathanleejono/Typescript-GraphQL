@@ -116,7 +116,7 @@ const main = async () => {
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
         httpOnly: true,
-        sameSite: "lax", //must be hard coded -> none for apollo studio
+        sameSite: "strict", //must be hard coded -> none for apollo studio
         secure: true, //must be hard coded -> true for apollo studio
       },
       secret: process.env.SECRET,
