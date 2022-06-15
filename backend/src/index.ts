@@ -112,7 +112,7 @@ const main = async () => {
     cors: false,
   });
 
-  const port = parseInt(process.env.PORT);
+  const port = parseInt(process.env.PORT as string);
 
   app.listen(port, () => {
     console.log(`server started on listening ${port}`);
