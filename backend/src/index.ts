@@ -10,7 +10,7 @@ import path from "path";
 import "reflect-metadata";
 import { buildSchema } from "type-graphql";
 import { DataSource } from "typeorm";
-import { COOKIE_NAME, __prod__ } from "./constants";
+import { COOKIE_NAME } from "./constants";
 import { Post } from "./entities/Post";
 import { Updoot } from "./entities/Updoot";
 import { User } from "./entities/User";
