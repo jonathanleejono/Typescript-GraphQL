@@ -23,20 +23,24 @@ import {
   useUpdatePostMutation,
 } from "../generated/graphql";
 import { createUrqlClient } from "../utils/createUrqlClient";
+import { withApollo } from "../utils/withApollo";
 
 const Index = () => {
-  const [, deletePost] = useDeletePostMutation();
-  const [variables, setVariables] = useState({
-    limit: 15,
-    cursor: null as null | string,
-  });
-  const [{ data: meData }] = useMeQuery();
-  const [{ data, fetching }] = usePostsQuery({
-    variables,
+  const { data, error, loading, fetchMore, variables } = usePostsQuery({
+    variables: {
+      limit: 15,
+      cursor: null,
+    },
+    notifyOnNetworkStatusChange: true,
   });
 
-  if (!fetching && !data) {
-    return <div>no posts were found</div>;
+  if (!loading && !data) {
+    return (
+      <div>
+        <div>No Posts Were Found</div>
+        <div>{error?.message}</div>
+      </div>
+    );
   }
 
   return (
@@ -49,7 +53,7 @@ const Index = () => {
       </Flex>
 
       <br />
-      {fetching && !data ? (
+      {loading && !data ? (
         <div>Loading...</div>
       ) : (
         <Stack spacing={8}>
@@ -86,12 +90,15 @@ const Index = () => {
         <Flex>
           <Button
             onClick={() => {
-              setVariables({
-                limit: variables?.limit,
-                cursor: data.posts.posts[data.posts.posts.length - 1].createdAt,
+              fetchMore({
+                variables: {
+                  limit: variables?.limit,
+                  cursor:
+                    data.posts.posts[data.posts.posts.length - 1].createdAt,
+                },
               });
             }}
-            isLoading={fetching}
+            isLoading={loading}
             m="auto"
             my={8}
           >
@@ -103,4 +110,4 @@ const Index = () => {
   );
 };
 
-export default withUrqlClient(createUrqlClient, { ssr: true })(Index);
+export default withApollo({ ssr: true })(Index);
