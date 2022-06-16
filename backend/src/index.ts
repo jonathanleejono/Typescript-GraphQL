@@ -59,6 +59,7 @@ const main = async () => {
   );
 
   // USE npm run watch whenever changes happen
+  // test
 
   // this needs to come before apollo for the session middleware
   // to be used inside of apollo
