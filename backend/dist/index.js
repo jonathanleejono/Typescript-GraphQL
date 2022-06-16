@@ -44,6 +44,8 @@ const main = async () => {
         origin: [
             process.env.CORS_ORIGIN,
             "https://studio.apollographql.com",
+            "http://localhost:3000",
+            "http://localhost:4000/graphql",
         ],
         credentials: true,
     }));
@@ -52,7 +54,7 @@ const main = async () => {
         store: new RedisStore({ client: redis, disableTouch: true }),
         cookie: {
             maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
-            httpOnly: true,
+            httpOnly: false,
             sameSite: "none",
             secure: true,
         },
