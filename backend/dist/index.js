@@ -32,9 +32,11 @@ exports.AppDataSource = new typeorm_1.DataSource({
     logging: true,
     entities: [User_1.User, Post_1.Post, Updoot_1.Updoot],
     migrations: [path_1.default.join(__dirname, "./migrations/*")],
+    ssl: { rejectUnauthorized: false },
 });
 const main = async () => {
     const app = (0, express_1.default)();
+    app.use(express_1.default.static(path_1.default.resolve("./frontend/out")));
     await exports.AppDataSource.initialize();
     const RedisStore = (0, connect_redis_1.default)(express_session_1.default);
     const redis = new ioredis_1.default(process.env.REDIS_URL);
@@ -43,29 +45,27 @@ const main = async () => {
         origin: [
             process.env.CORS_ORIGIN,
             "https://studio.apollographql.com",
-            "http://localhost:3000",
-            "http://localhost:4000/graphql",
         ],
         credentials: true,
     }));
+    app.get("*", (_, res) => {
+        res.sendFile(path_1.default.resolve("./frontend/out", "index.html"));
+    });
     app.use((0, express_session_1.default)({
         name: constants_1.COOKIE_NAME,
         store: new RedisStore({ client: redis, disableTouch: true }),
         cookie: {
             maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
             httpOnly: true,
-            sameSite: "none",
-            secure: true,
-            domain: constants_1.__prod__
-                ? "typescript-graphql-poster.herokuapp.com"
-                : undefined,
+            sameSite: constants_1.__prod__ ? "none" : "lax",
+            secure: constants_1.__prod__ ? true : false,
         },
         secret: process.env.SECRET,
         resave: false,
         saveUninitialized: false,
     }));
     app.get("/ping", (_, res) => {
-        res.send("pong!!");
+        res.send("pong!!!!!");
     });
     const apolloServer = new apollo_server_express_1.ApolloServer({
         schema: await (0, type_graphql_1.buildSchema)({
@@ -79,6 +79,7 @@ const main = async () => {
             userLoader: (0, createUserLoader_1.createUserLoader)(),
             updootLoader: (0, createUpdootLoader_1.createUpdootLoader)(),
         }),
+        introspection: true,
     });
     await apolloServer.start();
     apolloServer.applyMiddleware({

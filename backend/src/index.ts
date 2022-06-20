@@ -20,6 +20,8 @@ import { UserResolver } from "./resolvers/user";
 import { MyContext } from "./types";
 import { createUpdootLoader } from "./utils/createUpdootLoader";
 import { createUserLoader } from "./utils/createUserLoader";
+// import { fileURLToPath } from "url";
+// import { dirname } from "path";
 
 dotenv.config();
 
@@ -30,11 +32,16 @@ export const AppDataSource = new DataSource({
   logging: true,
   entities: [User, Post, Updoot],
   migrations: [path.join(__dirname, "./migrations/*")],
-  // ssl: { rejectUnauthorized: false },
+  ssl: { rejectUnauthorized: false },
 });
+// const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const main = async () => {
   const app = express();
+  //comment out for testing
+
+  //only use when deploying
+  // app.use(express.static(path.resolve("./frontend/out")));
 
   await AppDataSource.initialize();
 
@@ -53,13 +60,16 @@ const main = async () => {
       origin: [
         process.env.CORS_ORIGIN as string,
         "https://studio.apollographql.com",
-        "http://localhost:3000",
-        "http://localhost:4000/graphql",
+        // "http://localhost:3000",
+        // "http://localhost:4000/graphql",
       ],
       credentials: true,
     })
   );
 
+  // app.get("*", (_, res) => {
+  //   res.sendFile(path.resolve("./frontend/out", "index.html"));
+  // });
   // USE npm run watch whenever changes happen
   // test
 
@@ -72,20 +82,20 @@ const main = async () => {
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
         httpOnly: true,
-        sameSite: "none", //must be none for apollo studio
-        secure: true, //must be true for apollo studio
-        domain: __prod__
-          ? "typescript-graphql-poster.herokuapp.com"
-          : undefined,
+        sameSite: __prod__ ? "none" : "lax", //must be none for apollo studio
+        secure: __prod__ ? true : false, //must be true for apollo studio
+        // domain: __prod__
+        //   ? "typescript-graphql-poster.herokuapp.com"
+        //   : undefined,
       },
-      secret: process.env.SECRET,
+      secret: process.env.SECRET as string,
       resave: false,
       saveUninitialized: false,
     })
   );
 
   app.get("/ping", (_, res) => {
-    res.send("pong!!");
+    res.send("pong!!!!!");
   });
 
   const apolloServer = new ApolloServer({
@@ -93,13 +103,14 @@ const main = async () => {
       resolvers: [HelloResolver, PostsResolver, UserResolver],
       validate: false,
     }),
-    context: ({ req, res }): MyContext => ({
+    context: ({ req, res }: MyContext): MyContext => ({
       req,
       res,
       redis,
       userLoader: createUserLoader(),
       updootLoader: createUpdootLoader(),
     }),
+    introspection: true,
   });
 
   await apolloServer.start();
