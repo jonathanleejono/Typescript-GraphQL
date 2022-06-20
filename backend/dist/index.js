@@ -36,7 +36,6 @@ exports.AppDataSource = new typeorm_1.DataSource({
 });
 const main = async () => {
     const app = (0, express_1.default)();
-    app.use(express_1.default.static(path_1.default.resolve("./frontend/out")));
     await exports.AppDataSource.initialize();
     const RedisStore = (0, connect_redis_1.default)(express_session_1.default);
     const redis = new ioredis_1.default(process.env.REDIS_URL);
@@ -48,9 +47,6 @@ const main = async () => {
         ],
         credentials: true,
     }));
-    app.get("*", (_, res) => {
-        res.sendFile(path_1.default.resolve("./frontend/out", "index.html"));
-    });
     app.use((0, express_session_1.default)({
         name: constants_1.COOKIE_NAME,
         store: new RedisStore({ client: redis, disableTouch: true }),
