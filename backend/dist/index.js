@@ -32,7 +32,6 @@ exports.AppDataSource = new typeorm_1.DataSource({
     logging: true,
     entities: [User_1.User, Post_1.Post, Updoot_1.Updoot],
     migrations: [path_1.default.join(__dirname, "./migrations/*")],
-    ssl: { rejectUnauthorized: false },
 });
 const main = async () => {
     const app = (0, express_1.default)();
@@ -54,9 +53,12 @@ const main = async () => {
         store: new RedisStore({ client: redis, disableTouch: true }),
         cookie: {
             maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
-            httpOnly: false,
+            httpOnly: true,
             sameSite: "none",
             secure: true,
+            domain: constants_1.__prod__
+                ? "typescript-graphql-poster.herokuapp.com"
+                : undefined,
         },
         secret: process.env.SECRET,
         resave: false,

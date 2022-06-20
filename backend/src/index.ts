@@ -10,7 +10,7 @@ import path from "path";
 import "reflect-metadata";
 import { buildSchema } from "type-graphql";
 import { DataSource } from "typeorm";
-import { COOKIE_NAME } from "./constants";
+import { COOKIE_NAME, __prod__ } from "./constants";
 import { Post } from "./entities/Post";
 import { Updoot } from "./entities/Updoot";
 import { User } from "./entities/User";
@@ -30,7 +30,7 @@ export const AppDataSource = new DataSource({
   logging: true,
   entities: [User, Post, Updoot],
   migrations: [path.join(__dirname, "./migrations/*")],
-  ssl: { rejectUnauthorized: false },
+  // ssl: { rejectUnauthorized: false },
 });
 
 const main = async () => {
@@ -71,9 +71,12 @@ const main = async () => {
       store: new RedisStore({ client: redis, disableTouch: true }),
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
-        httpOnly: false,
-        sameSite: "none", //must be hard coded -> none for apollo studio
-        secure: true, //must be hard coded -> true for apollo studio
+        httpOnly: true,
+        sameSite: "none", //must be none for apollo studio
+        secure: true, //must be true for apollo studio
+        domain: __prod__
+          ? "typescript-graphql-poster.herokuapp.com"
+          : undefined,
       },
       secret: process.env.SECRET,
       resave: false,
