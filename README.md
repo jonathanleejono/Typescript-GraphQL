@@ -7,6 +7,10 @@ The is project is based on Ben Awad’s Typescript GraphQL tutorial here: https:
 
 However, the tutorial is outdated, and the cookies are somewhat tedious to work through. Unfortunately, the cookies don’t set in the browser, but work on the backend. Working on how to fix the cookies is something that can be explored.
 
+After doing some research, it was found .herokuapp.com domain applications don't set cookies as they are included in the Mozilla Foundation's Public Suffix List. More info here: https://devcenter.heroku.com/articles/cookies-and-herokuapp-com
+
+The workaround would be to use a custom domain (eg. api.typescriptgraphql.com) for the cookies to set.
+
 See the live app here: https://typescript-graphql-poster.vercel.app
 
 ### Backend:
