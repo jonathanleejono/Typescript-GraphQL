@@ -11,7 +11,7 @@ After doing some research, it was found .herokuapp.com domain applications don't
 
 The workaround would be to use a custom domain (eg. api.typescriptgraphql.com) for the cookies to set.
 
-See the live app here: https://typescript-graphql-poster.vercel.app
+See the live app here: https://typescript-graphql-posts.vercel.app
 
 ### Backend:
 
