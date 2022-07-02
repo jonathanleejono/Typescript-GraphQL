@@ -83,6 +83,8 @@ export class PostsResolver {
     if (updoot && updoot.value !== realValue) {
       // transaction is the same as START TRANSACTION
       // tm = transaction manager
+      // likely have to use "parseInt" on one of the variables, and not use raw queries,
+      // to remove concatenating error for voting
       await AppDataSource.transaction(async (tm) => {
         await tm.query(
           `
