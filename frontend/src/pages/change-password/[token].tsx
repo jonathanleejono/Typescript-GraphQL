@@ -1,13 +1,12 @@
 import { Box, Button, Flex, Link } from "@chakra-ui/react";
 import { Form, Formik } from "formik";
 import { NextPage } from "next";
-import { withUrqlClient } from "next-urql";
 import NextLink from "next/link";
 // don't use this, but rather use useRouter()
 // import router from "next/router";
 // use this for better concurrency compatibility with React
 import { useRouter } from "next/router";
-import React, { useState } from "react";
+import { useState } from "react";
 import InputField from "../../components/InputField";
 import Wrapper from "../../components/Wrapper";
 import {
@@ -15,12 +14,12 @@ import {
   MeQuery,
   useChangePasswordMutation,
 } from "../../generated/graphql";
-import { createUrqlClient } from "../../utils/createUrqlClient";
 import { toErrorMap } from "../../utils/toErrorMap";
 import { withApollo } from "../../utils/withApollo";
 
+// pass in the {token} within the ChangePassword function
+// and the browser url for SSR
 const ChangePassword: NextPage<{ token: string }> = () => {
-  // pass in the {token} within the function here...^ , for ssr
   const router = useRouter();
   const [changePassword] = useChangePasswordMutation();
   const [tokenError, setTokenError] = useState("");
@@ -94,15 +93,5 @@ const ChangePassword: NextPage<{ token: string }> = () => {
     </div>
   );
 };
-
-//grabbing url token, or rather these are query params
-// if you wanted to server side render the page based on query param,
-// use get initial props, where you pass in token in ChangePassword
-// ChangePassword.getInitialProps = ({ query }) => {
-//   return {
-//     token: query.token as string,
-//   };
-// };
-// timestamp: 6:30:15
 
 export default withApollo({ ssr: false })(ChangePassword);

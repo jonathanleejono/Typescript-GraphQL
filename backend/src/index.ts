@@ -6,8 +6,6 @@ import express from "express";
 import session from "express-session";
 import Redis from "ioredis";
 import path from "path";
-//type-graphql and typeorm need reflect-metadata to work
-import "reflect-metadata";
 import { buildSchema } from "type-graphql";
 import { DataSource } from "typeorm";
 import { COOKIE_NAME, __prod__ } from "./constants";
@@ -20,8 +18,8 @@ import { UserResolver } from "./resolvers/user";
 import { MyContext } from "./types";
 import { createUpdootLoader } from "./utils/createUpdootLoader";
 import { createUserLoader } from "./utils/createUserLoader";
-// import { fileURLToPath } from "url";
-// import { dirname } from "path";
+//type-graphql and typeorm need reflect-metadata to work
+import "reflect-metadata";
 
 dotenv.config();
 
@@ -34,14 +32,9 @@ export const AppDataSource = new DataSource({
   migrations: [path.join(__dirname, "./migrations/*")],
   ssl: { rejectUnauthorized: false },
 });
-// const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const main = async () => {
   const app = express();
-  //comment out for testing
-
-  //only use when deploying
-  // app.use(express.static(path.resolve("./frontend/out")));
 
   await AppDataSource.initialize();
 
@@ -53,28 +46,18 @@ const main = async () => {
   //this must be here for apollo studio
   app.set("trust proxy", process.env.NODE_ENV !== "production");
 
-  // https://studio.apollographql.com
-
   app.use(
     cors({
       origin: [
         process.env.CORS_ORIGIN as string,
         "https://studio.apollographql.com",
-        // "http://localhost:3000",
-        // "http://localhost:4000/graphql",
       ],
       credentials: true,
     })
   );
 
-  // app.get("*", (_, res) => {
-  //   res.sendFile(path.resolve("./frontend/out", "index.html"));
-  // });
-  // USE npm run watch whenever changes happen
-  // test
-
-  // this needs to come before apollo for the session middleware
-  // to be used inside of apollo
+  // this needs to come before apollo for the
+  // session middleware to be used inside of apollo
   app.use(
     session({
       name: COOKIE_NAME,
@@ -84,9 +67,6 @@ const main = async () => {
         httpOnly: true,
         sameSite: __prod__ ? "none" : "lax", //must be none for apollo studio
         secure: __prod__ ? true : false, //must be true for apollo studio
-        // domain: __prod__
-        //   ? "typescript-graphql-poster.herokuapp.com"
-        //   : undefined,
       },
       secret: process.env.SECRET as string,
       resave: false,

@@ -1,28 +1,17 @@
-import { DeleteIcon, EditIcon, PhoneIcon } from "@chakra-ui/icons";
 import {
   Box,
   Button,
   Flex,
   Heading,
-  IconButton,
   Link,
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { withUrqlClient } from "next-urql";
 import NextLink from "next/link";
-import { useState } from "react";
 import EditDeletePostButtons from "../components/EditDeletePostButtons";
 import Layout from "../components/Layout";
-import NavBar from "../components/NavBar";
 import { UpdootSection } from "../components/UpdootSection";
-import {
-  useDeletePostMutation,
-  useMeQuery,
-  usePostsQuery,
-  useUpdatePostMutation,
-} from "../generated/graphql";
-import { createUrqlClient } from "../utils/createUrqlClient";
+import { usePostsQuery } from "../generated/graphql";
 import { withApollo } from "../utils/withApollo";
 
 const Index = () => {

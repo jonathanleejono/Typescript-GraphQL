@@ -6,7 +6,6 @@ import DataLoader from "dataloader";
 export const createUpdootLoader = () =>
   new DataLoader<{ postId: number; userId: number }, Updoot | null>(
     async (keys) => {
-      // const updoots = await Updoot.findByIds(keys as any);
       const updoots = await Updoot.findBy(keys as any);
       const updootIdsToUpdoot: Record<string, Updoot> = {};
       updoots.forEach((updoot) => {

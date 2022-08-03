@@ -71,28 +71,23 @@ export class PostsResolver {
     @Arg("value", () => Int) value: number,
     @Ctx() { req }: MyContext
   ) {
-    //fine-start
     const isUpdoot = value !== -1;
     const realValue = isUpdoot ? 1 : -1;
     const { userId } = req.session;
 
     const updoot = await Updoot.findOne({ where: { postId, userId } });
 
-    // the user has voted on the post before
-    // and they are changing their vote
     if (updoot && updoot.value !== realValue) {
       // transaction is the same as START TRANSACTION
-      // tm = transaction manager
-      // likely have to use "parseInt" on one of the variables, and not use raw queries,
-      // to remove concatenating error for voting
       await AppDataSource.transaction(async (tm) => {
         await tm.query(
+          // tm = transaction manager
           `
     update updoot
     set value = $1
     where "postId" = $2 and "userId" = $3
         `,
-          [realValue, postId, userId]
+          [realValue, postId, userId] // likely have to use "parseInt"
         );
 
         await tm.query(
@@ -126,7 +121,6 @@ export class PostsResolver {
         );
       });
     }
-    //fine-end
     return true;
   }
 
@@ -136,7 +130,7 @@ export class PostsResolver {
     @Arg("cursor", () => String, { nullable: true }) cursor: string | null
   ): Promise<PaginatedPosts> {
     //the logic is if there's 1 more post above the limit,
-    //then there's more posts (hence hasMore), timestamp ~7:40:00
+    //then there's more posts (hence hasMore)
     const realLimit = Math.min(50, limit);
     const realLimitPlusOne = realLimit + 1;
 
@@ -157,20 +151,6 @@ export class PostsResolver {
       replacements
     );
 
-    // the 'p.' is alias for post
-    // const qb = await AppDataSource.getRepository(Post)
-    //   .createQueryBuilder("p")
-    //   .innerJoinAndSelect("p.creator", "u", 'u.id = p."creatorId"')
-    //   .orderBy('p."id"', "DESC")
-    //   .take(realLimitPlusOne);
-    // if (cursor) {
-    //   qb.where('"createdAt" < :cursor', {
-    //     cursor: new Date(parseInt(cursor)),
-    //   });
-    // }
-
-    // const posts = await qb.getMany();
-
     return {
       posts: posts.slice(0, realLimit),
       hasMore: posts.length === realLimitPlusOne,
@@ -182,7 +162,6 @@ export class PostsResolver {
     return Post.findOne({ where: { id } });
   }
 
-  //mutation is for insert, updating, or removing data (ie. altering data on the server)
   @Mutation(() => Post)
   @UseMiddleware(isAuth)
   async createPost(
