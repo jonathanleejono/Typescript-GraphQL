@@ -1,6 +1,8 @@
 import React from "react";
-import NavBar from "./NavBar";
 import Wrapper from "./Wrapper";
+import dynamic from "next/dynamic";
+
+const NavBarComponent = dynamic(() => import("./NavBar"), { ssr: false });
 
 export type WrapperVariant = "small" | "regular";
 
@@ -11,7 +13,7 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children, variant }) => {
   return (
     <div>
-      <NavBar />
+      <NavBarComponent />
       <Wrapper variant={variant}>{children}</Wrapper>
     </div>
   );
