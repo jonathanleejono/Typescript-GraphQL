@@ -1,26 +1,27 @@
+import { useApolloClient } from "@apollo/client";
 import { Box, Button, Flex, Heading, Link } from "@chakra-ui/react";
-import React from "react";
 import NextLink from "next/link";
+import React from "react";
 import { useLogoutMutation, useMeQuery } from "../generated/graphql";
 import { isServer } from "../utils/isServer";
-import { useRouter } from "next/router";
-import { useApolloClient } from "@apollo/client";
 
 interface NavBarProps {}
 
 const NavBar: React.FC<NavBarProps> = ({}) => {
-  const router = useRouter();
   // logout has to go first
   const [logout, { loading: logoutFetching }] = useLogoutMutation();
   const apolloClient = useApolloClient();
   const { data, loading } = useMeQuery({
     skip: isServer(),
   });
-  let body = null;
-  // data is loading
+
+  let body;
+
+  const userLoggedIn = data?.me;
+
   if (loading) {
-    // user not logged in
-  } else if (!data?.me) {
+    body = null;
+  } else if (!userLoggedIn) {
     body = (
       <>
         <NextLink href="/login">
@@ -58,6 +59,7 @@ const NavBar: React.FC<NavBarProps> = ({}) => {
       </Flex>
     );
   }
+
   return (
     <Flex zIndex={1} position="sticky" top={0} bg="tomato" p={4}>
       <NextLink href="/">

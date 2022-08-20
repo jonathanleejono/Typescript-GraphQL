@@ -2,9 +2,6 @@ import { Box, Button, Flex, Link } from "@chakra-ui/react";
 import { Form, Formik } from "formik";
 import { NextPage } from "next";
 import NextLink from "next/link";
-// don't use this, but rather use useRouter()
-// import router from "next/router";
-// use this for better concurrency compatibility with React
 import { useRouter } from "next/router";
 import { useState } from "react";
 import InputField from "../../components/InputField";

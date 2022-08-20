@@ -92,7 +92,6 @@ export const UpdootSection: React.FC<UpdootSectionProps> = ({ post }) => {
         colorScheme={post.voteStatus === -1 ? "red" : undefined}
         isLoading={loadingState === "downdoot-loading"}
         aria-label="downdoot post"
-        // icon="chevron-down"
         icon={<ChevronDownIcon />}
       />
     </Flex>
