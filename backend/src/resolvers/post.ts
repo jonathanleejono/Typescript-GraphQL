@@ -87,7 +87,7 @@ export class PostsResolver {
     set value = $1
     where "postId" = $2 and "userId" = $3
         `,
-          [realValue, postId, userId] // likely have to use "parseInt"
+          [realValue, postId, userId]
         );
 
         await tm.query(

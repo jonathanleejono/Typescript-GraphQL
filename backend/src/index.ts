@@ -8,7 +8,7 @@ import Redis from "ioredis";
 import path from "path";
 import { buildSchema } from "type-graphql";
 import { DataSource } from "typeorm";
-import { COOKIE_NAME, __prod__ } from "./constants";
+import { COOKIE_NAME, CORS_LOCALHOST, PROD_ENV } from "./constants";
 import { Post } from "./entities/Post";
 import { Updoot } from "./entities/Updoot";
 import { User } from "./entities/User";
@@ -30,7 +30,7 @@ export const AppDataSource = new DataSource({
   logging: true,
   entities: [User, Post, Updoot],
   migrations: [path.join(__dirname, "./migrations/*")],
-  ssl: { rejectUnauthorized: false },
+  ssl: PROD_ENV ? { rejectUnauthorized: false } : false,
 });
 
 const main = async () => {
@@ -38,6 +38,7 @@ const main = async () => {
 
   await AppDataSource.initialize();
 
+  // keep commented if migrations already ran
   // await AppDataSource.runMigrations();
 
   const RedisStore = connectRedis(session);
@@ -65,8 +66,8 @@ const main = async () => {
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
         httpOnly: true,
-        sameSite: __prod__ ? "none" : "lax", //must be none for apollo studio
-        secure: __prod__ ? true : false, //must be true for apollo studio
+        sameSite: CORS_LOCALHOST ? "lax" : "none", //must be lax for localhost frontend, none for apollo studio
+        secure: CORS_LOCALHOST ? false : true, // must be false for localhost frontend, true for apollo studio
       },
       secret: process.env.SECRET as string,
       resave: false,
@@ -75,7 +76,7 @@ const main = async () => {
   );
 
   app.get("/ping", (_, res) => {
-    res.send("pong!!!!!");
+    res.send("pong!!!");
   });
 
   const apolloServer = new ApolloServer({

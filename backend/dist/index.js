@@ -12,7 +12,6 @@ const express_1 = __importDefault(require("express"));
 const express_session_1 = __importDefault(require("express-session"));
 const ioredis_1 = __importDefault(require("ioredis"));
 const path_1 = __importDefault(require("path"));
-require("reflect-metadata");
 const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
 const constants_1 = require("./constants");
@@ -24,6 +23,7 @@ const post_1 = require("./resolvers/post");
 const user_1 = require("./resolvers/user");
 const createUpdootLoader_1 = require("./utils/createUpdootLoader");
 const createUserLoader_1 = require("./utils/createUserLoader");
+require("reflect-metadata");
 dotenv_1.default.config();
 exports.AppDataSource = new typeorm_1.DataSource({
     type: "postgres",
@@ -32,7 +32,7 @@ exports.AppDataSource = new typeorm_1.DataSource({
     logging: true,
     entities: [User_1.User, Post_1.Post, Updoot_1.Updoot],
     migrations: [path_1.default.join(__dirname, "./migrations/*")],
-    ssl: { rejectUnauthorized: false },
+    ssl: constants_1.PROD_ENV ? { rejectUnauthorized: false } : false,
 });
 const main = async () => {
     const app = (0, express_1.default)();
@@ -53,15 +53,15 @@ const main = async () => {
         cookie: {
             maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
             httpOnly: true,
-            sameSite: constants_1.__prod__ ? "none" : "lax",
-            secure: constants_1.__prod__ ? true : false,
+            sameSite: constants_1.CORS_LOCALHOST ? "lax" : "none",
+            secure: constants_1.CORS_LOCALHOST ? false : true,
         },
         secret: process.env.SECRET,
         resave: false,
         saveUninitialized: false,
     }));
     app.get("/ping", (_, res) => {
-        res.send("pong!!!!!");
+        res.send("pong!!!");
     });
     const apolloServer = new apollo_server_express_1.ApolloServer({
         schema: await (0, type_graphql_1.buildSchema)({
