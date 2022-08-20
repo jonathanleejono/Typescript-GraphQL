@@ -47,14 +47,29 @@ const main = async () => {
         ],
         credentials: true,
     }));
+    const usingApolloStudio = true;
+    let usingLocalHostFrontEnd = false;
+    app.use(function (req, _, next) {
+        if (req.headers.origin === "http://localhost:3000") {
+            usingLocalHostFrontEnd = true;
+        }
+        else {
+            usingLocalHostFrontEnd = false;
+        }
+        next();
+    });
     app.use((0, express_session_1.default)({
         name: constants_1.COOKIE_NAME,
         store: new RedisStore({ client: redis, disableTouch: true }),
         cookie: {
             maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
             httpOnly: true,
-            sameSite: constants_1.CORS_LOCALHOST ? "lax" : "none",
-            secure: constants_1.CORS_LOCALHOST ? false : true,
+            sameSite: (constants_1.PROD_ENV || usingApolloStudio) && !usingLocalHostFrontEnd
+                ? "none"
+                : "lax",
+            secure: (constants_1.PROD_ENV || usingApolloStudio) && !usingLocalHostFrontEnd
+                ? true
+                : false,
         },
         secret: process.env.SECRET,
         resave: false,
@@ -75,7 +90,6 @@ const main = async () => {
             userLoader: (0, createUserLoader_1.createUserLoader)(),
             updootLoader: (0, createUpdootLoader_1.createUpdootLoader)(),
         }),
-        introspection: true,
     });
     await apolloServer.start();
     apolloServer.applyMiddleware({

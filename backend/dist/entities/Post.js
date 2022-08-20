@@ -44,7 +44,7 @@ __decorate([
 __decorate([
     (0, type_graphql_1.Field)(),
     (0, typeorm_1.Column)({ type: "int", default: 0 }),
-    __metadata("design:type", String)
+    __metadata("design:type", Number)
 ], Post.prototype, "points", void 0);
 __decorate([
     (0, type_graphql_1.Field)(() => type_graphql_1.Int, { nullable: true }),

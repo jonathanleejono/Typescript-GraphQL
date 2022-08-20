@@ -8,7 +8,7 @@ import Redis from "ioredis";
 import path from "path";
 import { buildSchema } from "type-graphql";
 import { DataSource } from "typeorm";
-import { COOKIE_NAME, CORS_LOCALHOST, PROD_ENV } from "./constants";
+import { COOKIE_NAME, PROD_ENV } from "./constants";
 import { Post } from "./entities/Post";
 import { Updoot } from "./entities/Updoot";
 import { User } from "./entities/User";
@@ -57,6 +57,20 @@ const main = async () => {
     })
   );
 
+  const usingApolloStudio: boolean = true;
+
+  let usingLocalHostFrontEnd: boolean = false;
+
+  app.use(function (req, _, next) {
+    if (req.headers.origin === "http://localhost:3000") {
+      usingLocalHostFrontEnd = true;
+    } else {
+      usingLocalHostFrontEnd = false;
+    }
+
+    next();
+  });
+
   // this needs to come before apollo for the
   // session middleware to be used inside of apollo
   app.use(
@@ -66,8 +80,14 @@ const main = async () => {
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
         httpOnly: true,
-        sameSite: CORS_LOCALHOST ? "lax" : "none", //must be lax for localhost frontend, none for apollo studio
-        secure: CORS_LOCALHOST ? false : true, // must be false for localhost frontend, true for apollo studio
+        sameSite:
+          (PROD_ENV || usingApolloStudio) && !usingLocalHostFrontEnd
+            ? "none"
+            : "lax", //must be lax for localhost frontend, none for apollo studio
+        secure:
+          (PROD_ENV || usingApolloStudio) && !usingLocalHostFrontEnd
+            ? true
+            : false, // must be false for localhost frontend, true for apollo studio
       },
       secret: process.env.SECRET as string,
       resave: false,
@@ -91,7 +111,6 @@ const main = async () => {
       userLoader: createUserLoader(),
       updootLoader: createUpdootLoader(),
     }),
-    introspection: true,
   });
 
   await apolloServer.start();
