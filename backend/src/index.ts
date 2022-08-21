@@ -51,6 +51,7 @@ const main = async () => {
     cors({
       origin: [
         process.env.CORS_ORIGIN as string,
+        process.env.PING_CHECKER as string,
         "https://studio.apollographql.com",
       ],
       credentials: true,
@@ -123,7 +124,7 @@ const main = async () => {
   const port = parseInt(process.env.PORT as string);
 
   app.listen(port, () => {
-    console.log(`server started on listening ${port}`);
+    console.log(`Server started on listening ${port}`);
   });
 };
 
