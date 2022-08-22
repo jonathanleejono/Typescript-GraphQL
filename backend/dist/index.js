@@ -48,7 +48,7 @@ const main = async () => {
         ],
         credentials: true,
     }));
-    const usingApolloStudio = true;
+    const usingApolloStudio = process.env.STUDIO_APOLLO === "https://studio.apollographql.com";
     let usingLocalHostFrontEnd = false;
     app.use(function (req, _, next) {
         if (req.headers.origin === "http://localhost:3000") {

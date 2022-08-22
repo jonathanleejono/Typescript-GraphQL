@@ -58,7 +58,8 @@ const main = async () => {
     })
   );
 
-  const usingApolloStudio: boolean = true;
+  const usingApolloStudio: boolean =
+    process.env.STUDIO_APOLLO === "https://studio.apollographql.com";
 
   let usingLocalHostFrontEnd: boolean = false;
 
