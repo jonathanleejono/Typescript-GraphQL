@@ -1,17 +1,12 @@
 # Typescript-GraphQL
 
 
-This is a fullstack Typescript GraphQL API project that lets users create, update, delete, and vote on posts (sort of like a mini Reddit). Redis is used as a fast way to store session cookies. TypeORM is used to communicate to the PostgreSQL database and for database migrations. Next.js is used for the frontend, with some server side rendered (SSR) components. The GraphQL API uses queries and mutations. Mutations let users modify and alter data (eg. create, update, delete).
+This is a fullstack Typescript GraphQL API project that lets users create, update, delete, and vote on posts (sort of like a mini Reddit). Redis is used as a fast way to store session cookies. TypeORM is used to communicate to the PostgreSQL database and for database migrations. Next.js is used for the frontend, with some server side rendered (SSR) components. The GraphQL API uses queries and mutations from a single endpoint, unlike RESTful APIs which are based around multiple endpoints. 
 
 The is project is based on Ben Awad’s Typescript GraphQL tutorial here: https://www.youtube.com/watch?v=I6ypD7qv3Z8
 
-However, the tutorial is outdated, and the cookies are somewhat tedious to work through. Unfortunately, the cookies don’t set in the browser, but work on the backend. Working on how to fix the cookies is something that can be explored.
+Cookies can be tricky to deal with. One of the ways to set cookies from the backend when using Studio Apollo and switching between a localhost development frontend is to check whether the request's origin is from the Next.js/React localhost link. If localhost is being used from the frontend, then the cookie settings should be "lax" and "false" to be able to set the cookie. These settings may be different for using an API client like Postman.
 
-After doing some research, it was found .herokuapp.com domain applications don't set cookies as they are included in the Mozilla Foundation's Public Suffix List. More info here: https://devcenter.heroku.com/articles/cookies-and-herokuapp-com
-
-The workaround would be to use a custom domain (eg. api.typescriptgraphql.com) for the cookies to set.
-
-See the live app here: https://typescript-graphql-posts.vercel.app
 
 ### Backend:
 
@@ -25,16 +20,11 @@ See the live app here: https://typescript-graphql-posts.vercel.app
 
 ### Frontend:
 
-- Next.js (Typescript)
+- Next.js/React (Typescript)
 - GraphQL (Fragments, Mutations, Queries)
-- URQL Client / Apollo Client
+- Apollo Client
 - Chakra UI
 - Prettier - Formatting
-
-### Deployment:
-
-- Heroku (Backend)
-- Vercel (Frontend)
 
 
 ![landing page with posts](https://github.com/jonathanleejono/Typescript-GraphQL/blob/main/assets/graphql_frontend_posts.png)
