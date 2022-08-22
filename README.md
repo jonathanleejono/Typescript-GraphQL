@@ -5,7 +5,9 @@ This is a fullstack Typescript GraphQL API project that lets users create, updat
 
 The is project is based on Ben Awad’s Typescript GraphQL tutorial here: https://www.youtube.com/watch?v=I6ypD7qv3Z8
 
-Cookies can be tricky to deal with. One of the ways to set cookies from the backend when using Studio Apollo and switching between a localhost development frontend is to check whether the request's origin is from the Next.js/React localhost link. If localhost is being used from the frontend, then the cookie settings should be "lax" and "false" to be able to set the cookie. These settings may be different for using an API client like Postman.
+Cookies can be tricky to deal with. If a frontend dev server on localhost is used to fetch data from the backend, then the cookie settings should be "sameSite:lax" and "secure:false" to be able to set the cookie. These settings may be different for using an API client like Postman. 
+
+Check out the live app here: https://typescript-graphql-posts.vercel.app/
 
 
 ### Backend:
