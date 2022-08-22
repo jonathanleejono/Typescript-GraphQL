@@ -45,7 +45,7 @@ const main = async () => {
   const redis = new Redis(process.env.REDIS_URL as string);
 
   //this must be here for apollo studio
-  app.set("trust proxy", 1);
+  app.set("trust proxy", process.env.NODE_ENV !== "production");
 
   app.use(
     cors({
