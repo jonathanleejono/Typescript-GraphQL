@@ -43,7 +43,8 @@ const main = async () => {
     app.use((0, cors_1.default)({
         origin: [
             process.env.CORS_ORIGIN,
-            "https://studio.apollographql.com",
+            process.env.PING_CHECKER,
+            process.env.STUDIO_APOLLO,
         ],
         credentials: true,
     }));
@@ -64,12 +65,8 @@ const main = async () => {
         cookie: {
             maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
             httpOnly: true,
-            sameSite: (constants_1.PROD_ENV || usingApolloStudio) && !usingLocalHostFrontEnd
-                ? "none"
-                : "lax",
-            secure: (constants_1.PROD_ENV || usingApolloStudio) && !usingLocalHostFrontEnd
-                ? true
-                : false,
+            sameSite: usingApolloStudio && !usingLocalHostFrontEnd ? "none" : "lax",
+            secure: usingApolloStudio && !usingLocalHostFrontEnd ? true : false,
         },
         secret: process.env.SECRET,
         resave: false,
@@ -98,7 +95,7 @@ const main = async () => {
     });
     const port = parseInt(process.env.PORT);
     app.listen(port, () => {
-        console.log(`server started on listening ${port}`);
+        console.log(`Server started on listening ${port}`);
     });
 };
 main().catch((err) => {

@@ -104,7 +104,7 @@ let UserResolver = class UserResolver {
             return true;
         }
         const token = (0, nanoid_1.nanoid)();
-        await redis.set(constants_1.FORGET_PASSWORD_PREFIX + token, user.id, "ex", 1000 * 60 * 60 * 24 * 3);
+        await redis.set(constants_1.FORGET_PASSWORD_PREFIX + token, user.id);
         await (0, sendEmail_1.sendEmail)(email, `<a href="http://localhost:3000/change-password/${token}">reset password</a>`);
         return true;
     }

@@ -118,12 +118,7 @@ export class UserResolver {
 
     const token = nanoid();
 
-    await redis.set(
-      FORGET_PASSWORD_PREFIX + token,
-      user.id,
-      "ex",
-      1000 * 60 * 60 * 24 * 3
-    ); // 3 days
+    await redis.set(FORGET_PASSWORD_PREFIX + token, user.id);
 
     await sendEmail(
       email,
