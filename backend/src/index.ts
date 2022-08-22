@@ -42,7 +42,7 @@ const main = async () => {
   // await AppDataSource.runMigrations();
 
   const RedisStore = connectRedis(session);
-  const redis = new Redis(process.env.REDIS_URL);
+  const redis = new Redis(process.env.REDIS_URL as string);
 
   //this must be here for apollo studio
   app.set("trust proxy", process.env.NODE_ENV !== "production");
