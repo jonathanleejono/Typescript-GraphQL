@@ -61,18 +61,6 @@ const main = async () => {
   const usingApolloStudio: boolean =
     process.env.STUDIO_APOLLO === "https://studio.apollographql.com";
 
-  let usingLocalHostFrontEnd: boolean = false;
-
-  app.use(function (req, _, next) {
-    if (req.headers.origin === "http://localhost:3000") {
-      usingLocalHostFrontEnd = true;
-    } else {
-      usingLocalHostFrontEnd = false;
-    }
-
-    next();
-  });
-
   // this needs to come before apollo for the
   // session middleware to be used inside of apollo
   app.use(
@@ -82,8 +70,8 @@ const main = async () => {
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
         httpOnly: true,
-        sameSite: usingApolloStudio && !usingLocalHostFrontEnd ? "none" : "lax", //must be lax for localhost frontend, none for apollo studio
-        secure: usingApolloStudio && !usingLocalHostFrontEnd ? true : false, // must be false for localhost frontend, true for apollo studio
+        sameSite: usingApolloStudio || PROD_ENV ? "none" : "lax", //must be lax for localhost frontend, none for apollo studio
+        secure: usingApolloStudio || PROD_ENV ? true : false, // must be false for localhost frontend, true for apollo studio
       },
       secret: process.env.SECRET as string,
       resave: false,

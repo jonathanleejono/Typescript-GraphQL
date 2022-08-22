@@ -49,24 +49,14 @@ const main = async () => {
         credentials: true,
     }));
     const usingApolloStudio = process.env.STUDIO_APOLLO === "https://studio.apollographql.com";
-    let usingLocalHostFrontEnd = false;
-    app.use(function (req, _, next) {
-        if (req.headers.origin === "http://localhost:3000") {
-            usingLocalHostFrontEnd = true;
-        }
-        else {
-            usingLocalHostFrontEnd = false;
-        }
-        next();
-    });
     app.use((0, express_session_1.default)({
         name: constants_1.COOKIE_NAME,
         store: new RedisStore({ client: redis, disableTouch: true }),
         cookie: {
             maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
             httpOnly: true,
-            sameSite: usingApolloStudio && !usingLocalHostFrontEnd ? "none" : "lax",
-            secure: usingApolloStudio && !usingLocalHostFrontEnd ? true : false,
+            sameSite: usingApolloStudio || constants_1.PROD_ENV ? "none" : "lax",
+            secure: usingApolloStudio || constants_1.PROD_ENV ? true : false,
         },
         secret: process.env.SECRET,
         resave: false,
