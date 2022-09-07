@@ -34,24 +34,15 @@ exports.AppDataSource = new typeorm_1.DataSource({
     migrations: [path_1.default.join(__dirname, "./migrations/*")],
     ssl: constants_1.PROD_ENV ? { rejectUnauthorized: false } : false,
 });
-const { REDIS_URL, REDIS_HOST, REDIS_PORT, REDIS_PASSWORD, REDIS_AUTH } = process.env;
+const { REDIS_URL } = process.env;
 const main = async () => {
     const app = (0, express_1.default)();
     await exports.AppDataSource.initialize();
+    await exports.AppDataSource.runMigrations();
     const RedisStore = (0, connect_redis_1.default)(express_session_1.default);
-    let redis;
-    if (constants_1.PROD_ENV && REDIS_AUTH === "true") {
-        redis = new ioredis_1.default({
-            host: REDIS_HOST,
-            port: parseInt(REDIS_PORT),
-            password: REDIS_PASSWORD,
-        });
-    }
-    else {
-        redis = new ioredis_1.default(REDIS_URL);
-    }
+    const redis = new ioredis_1.default(REDIS_URL);
     redis.on("connect", () => {
-        console.log("Connected to our redis instance!");
+        console.log("Connected to redis instance!");
     });
     redis.on("error", (err) => {
         console.log("Error connecting to redis instance: ", err);
@@ -65,21 +56,30 @@ const main = async () => {
         ],
         credentials: true,
     }));
+    const usingApolloStudio = true;
+    let usingLocalHost = false;
+    app.use((req, _, next) => {
+        var _a;
+        if ((_a = req.headers.origin) === null || _a === void 0 ? void 0 : _a.toString().includes("http://localhost")) {
+            usingLocalHost = true;
+        }
+        next();
+    });
     app.use((0, express_session_1.default)({
         name: constants_1.COOKIE_NAME,
         store: new RedisStore({ client: redis, disableTouch: true }),
         cookie: {
             maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
             httpOnly: true,
-            sameSite: "none",
-            secure: true,
+            sameSite: (usingApolloStudio || constants_1.PROD_ENV) && !usingLocalHost ? "none" : "lax",
+            secure: (usingApolloStudio || constants_1.PROD_ENV) && !usingLocalHost ? true : false,
         },
         secret: process.env.SECRET,
         resave: false,
         saveUninitialized: false,
     }));
     app.get("/ping", (_, res) => {
-        res.send("pong!");
+        res.send("pong!!");
     });
     const apolloServer = new apollo_server_express_1.ApolloServer({
         schema: await (0, type_graphql_1.buildSchema)({
@@ -93,7 +93,6 @@ const main = async () => {
             userLoader: (0, createUserLoader_1.createUserLoader)(),
             updootLoader: (0, createUpdootLoader_1.createUpdootLoader)(),
         }),
-        cache: "bounded",
     });
     await apolloServer.start();
     apolloServer.applyMiddleware({

@@ -2,7 +2,7 @@ import { ApolloServer } from "apollo-server-express";
 import connectRedis from "connect-redis";
 import cors from "cors";
 import dotenv from "dotenv";
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import session from "express-session";
 import Redis from "ioredis";
 import path from "path";
@@ -33,8 +33,7 @@ export const AppDataSource = new DataSource({
   ssl: PROD_ENV ? { rejectUnauthorized: false } : false,
 });
 
-const { REDIS_URL, REDIS_HOST, REDIS_PORT, REDIS_PASSWORD, REDIS_AUTH } =
-  process.env;
+const { REDIS_URL } = process.env;
 
 const main = async () => {
   const app = express();
@@ -42,24 +41,13 @@ const main = async () => {
   await AppDataSource.initialize();
 
   // keep commented if migrations already ran
-  // await AppDataSource.runMigrations();
+  await AppDataSource.runMigrations();
 
   const RedisStore = connectRedis(session);
-
-  let redis;
-
-  if (PROD_ENV && REDIS_AUTH === "true") {
-    redis = new Redis({
-      host: REDIS_HOST as string,
-      port: parseInt(REDIS_PORT as string),
-      password: REDIS_PASSWORD as string,
-    });
-  } else {
-    redis = new Redis(REDIS_URL as string);
-  }
+  const redis = new Redis(REDIS_URL as string);
 
   redis.on("connect", () => {
-    console.log("Connected to our redis instance!");
+    console.log("Connected to redis instance!");
   });
 
   redis.on("error", (err) => {
@@ -80,6 +68,17 @@ const main = async () => {
     })
   );
 
+  const usingApolloStudio = true;
+
+  let usingLocalHost = false;
+
+  app.use((req: Request, _: Response, next: NextFunction) => {
+    if (req.headers.origin?.toString().includes("http://localhost")) {
+      usingLocalHost = true;
+    }
+    next();
+  });
+
   // this needs to come before apollo for the
   // session middleware to be used inside of apollo
   app.use(
@@ -89,8 +88,10 @@ const main = async () => {
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
         httpOnly: true,
-        sameSite: "none", //must be lax for localhost frontend, none for apollo studio
-        secure: true, // must be false for localhost frontend, true for apollo studio
+        sameSite:
+          (usingApolloStudio || PROD_ENV) && !usingLocalHost ? "none" : "lax", //must be lax for localhost frontend, none for apollo studio
+        secure:
+          (usingApolloStudio || PROD_ENV) && !usingLocalHost ? true : false, // must be false for localhost frontend, true for apollo studio
       },
       secret: process.env.SECRET as string,
       resave: false,
@@ -99,7 +100,7 @@ const main = async () => {
   );
 
   app.get("/ping", (_, res) => {
-    res.send("pong!");
+    res.send("pong!!");
   });
 
   const apolloServer = new ApolloServer({
@@ -114,7 +115,6 @@ const main = async () => {
       userLoader: createUserLoader(),
       updootLoader: createUpdootLoader(),
     }),
-    cache: "bounded",
   });
 
   await apolloServer.start();
