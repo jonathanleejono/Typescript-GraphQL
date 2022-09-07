@@ -34,7 +34,7 @@ exports.AppDataSource = new typeorm_1.DataSource({
     migrations: [path_1.default.join(__dirname, "./migrations/*")],
     ssl: constants_1.PROD_ENV ? { rejectUnauthorized: false } : false,
 });
-const { NODE_ENV, REDIS_URL, REDIS_HOST, REDIS_PORT, REDIS_PASSWORD, REDIS_AUTH, } = process.env;
+const { REDIS_URL, REDIS_HOST, REDIS_PORT, REDIS_PASSWORD, REDIS_AUTH } = process.env;
 const main = async () => {
     const app = (0, express_1.default)();
     await exports.AppDataSource.initialize();
@@ -56,7 +56,7 @@ const main = async () => {
     redis.on("error", (err) => {
         console.log("Error connecting to redis instance: ", err);
     });
-    app.set("trust proxy", NODE_ENV !== "production");
+    app.set("trust proxy", 1);
     app.use((0, cors_1.default)({
         origin: [
             process.env.CORS_ORIGIN,
@@ -79,7 +79,7 @@ const main = async () => {
         saveUninitialized: false,
     }));
     app.get("/ping", (_, res) => {
-        res.send("pong!!!");
+        res.send("pong!");
     });
     const apolloServer = new apollo_server_express_1.ApolloServer({
         schema: await (0, type_graphql_1.buildSchema)({
@@ -93,7 +93,7 @@ const main = async () => {
             userLoader: (0, createUserLoader_1.createUserLoader)(),
             updootLoader: (0, createUpdootLoader_1.createUpdootLoader)(),
         }),
-        persistedQueries: false,
+        cache: "bounded",
     });
     await apolloServer.start();
     apolloServer.applyMiddleware({

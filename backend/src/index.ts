@@ -33,14 +33,8 @@ export const AppDataSource = new DataSource({
   ssl: PROD_ENV ? { rejectUnauthorized: false } : false,
 });
 
-const {
-  NODE_ENV,
-  REDIS_URL,
-  REDIS_HOST,
-  REDIS_PORT,
-  REDIS_PASSWORD,
-  REDIS_AUTH,
-} = process.env;
+const { REDIS_URL, REDIS_HOST, REDIS_PORT, REDIS_PASSWORD, REDIS_AUTH } =
+  process.env;
 
 const main = async () => {
   const app = express();
@@ -73,7 +67,7 @@ const main = async () => {
   });
 
   //this must be here for apollo studio
-  app.set("trust proxy", NODE_ENV !== "production");
+  app.set("trust proxy", 1);
 
   app.use(
     cors({
@@ -105,7 +99,7 @@ const main = async () => {
   );
 
   app.get("/ping", (_, res) => {
-    res.send("pong!!!");
+    res.send("pong!");
   });
 
   const apolloServer = new ApolloServer({
@@ -120,7 +114,7 @@ const main = async () => {
       userLoader: createUserLoader(),
       updootLoader: createUpdootLoader(),
     }),
-    persistedQueries: false,
+    cache: "bounded",
   });
 
   await apolloServer.start();
