@@ -42,7 +42,7 @@ const main = async () => {
   await AppDataSource.initialize();
 
   // keep commented if migrations already ran
-  // await AppDataSource.runMigrations();
+  await AppDataSource.runMigrations();
 
   const RedisStore = connectRedis(session);
 
