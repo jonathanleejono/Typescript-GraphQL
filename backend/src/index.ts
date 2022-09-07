@@ -95,8 +95,8 @@ const main = async () => {
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
         httpOnly: true,
-        sameSite: PROD_ENV ? "none" : "lax", //must be lax for localhost frontend, none for apollo studio
-        secure: PROD_ENV ? true : false, // must be false for localhost frontend, true for apollo studio
+        sameSite: "none", //must be lax for localhost frontend, none for apollo studio
+        secure: true, // must be false for localhost frontend, true for apollo studio
       },
       secret: process.env.SECRET as string,
       resave: false,

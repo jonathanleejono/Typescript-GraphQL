@@ -71,8 +71,8 @@ const main = async () => {
         cookie: {
             maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
             httpOnly: true,
-            sameSite: constants_1.PROD_ENV ? "none" : "lax",
-            secure: constants_1.PROD_ENV ? true : false,
+            sameSite: "none",
+            secure: true,
         },
         secret: process.env.SECRET,
         resave: false,
