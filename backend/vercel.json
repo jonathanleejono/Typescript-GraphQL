@@ -13,7 +13,11 @@
     {
       "src": "/(.*)",
       "dest": "dist/index.js",
-      "methods": ["GET", "POST", "PUT", "PATCH", "OPTIONS", "DELETE"]
+      "methods": ["GET", "POST", "PUT", "PATCH", "OPTIONS", "DELETE"],
+      "headers": {
+        "key": "Access-Control-Allow-Headers",
+        "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Set-Cookie, Cookie"
+      }
     }
   ]
 }

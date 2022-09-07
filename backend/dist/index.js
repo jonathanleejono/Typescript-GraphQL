@@ -34,7 +34,7 @@ exports.AppDataSource = new typeorm_1.DataSource({
     migrations: [path_1.default.join(__dirname, "./migrations/*")],
     ssl: constants_1.PROD_ENV ? { rejectUnauthorized: false } : false,
 });
-const { NODE_ENV, REDIS_URL, REDIS_HOST, REDIS_PORT, REDIS_PASSWORD, REDIS_USERNAME, } = process.env;
+const { NODE_ENV, REDIS_URL, REDIS_HOST, REDIS_PORT, REDIS_PASSWORD } = process.env;
 const main = async () => {
     const app = (0, express_1.default)();
     await exports.AppDataSource.initialize();
@@ -44,7 +44,6 @@ const main = async () => {
         redis = new ioredis_1.default({
             host: REDIS_HOST,
             port: parseInt(REDIS_PORT),
-            username: REDIS_USERNAME,
             password: REDIS_PASSWORD,
         });
     }
