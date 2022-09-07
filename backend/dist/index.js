@@ -34,12 +34,30 @@ exports.AppDataSource = new typeorm_1.DataSource({
     migrations: [path_1.default.join(__dirname, "./migrations/*")],
     ssl: constants_1.PROD_ENV ? { rejectUnauthorized: false } : false,
 });
+const { NODE_ENV, REDIS_URL, REDIS_HOST, REDIS_PORT, REDIS_PASSWORD, REDIS_USERNAME, } = process.env;
 const main = async () => {
     const app = (0, express_1.default)();
     await exports.AppDataSource.initialize();
     const RedisStore = (0, connect_redis_1.default)(express_session_1.default);
-    const redis = new ioredis_1.default(process.env.REDIS_URL);
-    app.set("trust proxy", 1);
+    let redis;
+    if (constants_1.PROD_ENV) {
+        redis = new ioredis_1.default({
+            host: REDIS_HOST,
+            port: parseInt(REDIS_PORT),
+            username: REDIS_USERNAME,
+            password: REDIS_PASSWORD,
+        });
+    }
+    else {
+        redis = new ioredis_1.default(REDIS_URL);
+    }
+    redis.on("connect", () => {
+        console.log("Connected to our redis instance!");
+    });
+    redis.on("error", (err) => {
+        console.log("Error connecting to redis instance: ", err);
+    });
+    app.set("trust proxy", NODE_ENV !== "production");
     app.use((0, cors_1.default)({
         origin: [
             process.env.CORS_ORIGIN,
