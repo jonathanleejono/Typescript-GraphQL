@@ -38,7 +38,6 @@ const { REDIS_URL, REDIS_HOST, REDIS_PORT, REDIS_PASSWORD, REDIS_AUTH } = proces
 const main = async () => {
     const app = (0, express_1.default)();
     await exports.AppDataSource.initialize();
-    await exports.AppDataSource.runMigrations();
     const RedisStore = (0, connect_redis_1.default)(express_session_1.default);
     let redis;
     if (constants_1.PROD_ENV && REDIS_AUTH === "true") {

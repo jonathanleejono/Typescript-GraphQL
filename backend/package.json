@@ -8,8 +8,8 @@
     "dev": "nodemon dist/index.js",
     "start": "node dist/index.js",
     "start2": "ts-node index.ts",
-    "build": "tsc -p .",
-    "deploy": "npm run build && vercel --prod",
+    "typescript-build": "tsc -p .",
+    "vercel-deploy": "npm run build && vercel --prod",
     "dev2": "nodemon --exec ts-node src/index.ts",
     "create:migration": "mikro-orm migration:create",
     "server": "concurrently --kill-others-on-fail \" redis-server\" \" npm run watch\" \" npm run dev2\""
