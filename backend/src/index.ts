@@ -33,14 +33,8 @@ export const AppDataSource = new DataSource({
   ssl: PROD_ENV ? { rejectUnauthorized: false } : false,
 });
 
-const {
-  NODE_ENV,
-  REDIS_URL,
-  REDIS_HOST,
-  REDIS_PORT,
-  REDIS_PASSWORD,
-  REDIS_USERNAME,
-} = process.env;
+const { NODE_ENV, REDIS_URL, REDIS_HOST, REDIS_PORT, REDIS_PASSWORD } =
+  process.env;
 
 const main = async () => {
   const app = express();
@@ -58,7 +52,6 @@ const main = async () => {
     redis = new Redis({
       host: REDIS_HOST as string,
       port: parseInt(REDIS_PORT as string),
-      username: REDIS_USERNAME as string,
       password: REDIS_PASSWORD as string,
     });
   } else {
