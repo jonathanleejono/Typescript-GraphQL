@@ -33,7 +33,15 @@ export const AppDataSource = new DataSource({
   ssl: PROD_ENV ? { rejectUnauthorized: false } : false,
 });
 
-const { REDIS_URL } = process.env;
+const {
+  REDIS_URL,
+  NODE_ENV,
+  USE_REDIS_AUTH,
+  REDIS_HOST,
+  REDIS_PORT,
+  REDIS_USERNAME,
+  REDIS_PASSWORD,
+} = process.env;
 
 const main = async () => {
   const app = express();
@@ -44,7 +52,17 @@ const main = async () => {
   await AppDataSource.runMigrations();
 
   const RedisStore = connectRedis(session);
-  const redis = new Redis(REDIS_URL as string);
+
+  let redis = new Redis(REDIS_URL as string);
+
+  if (NODE_ENV === "production" && USE_REDIS_AUTH === "yes") {
+    redis = new Redis({
+      host: REDIS_HOST,
+      port: parseInt(REDIS_PORT as string),
+      username: REDIS_USERNAME,
+      password: REDIS_PASSWORD,
+    });
+  }
 
   redis.on("connect", () => {
     console.log("Connected to redis instance!");
