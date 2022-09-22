@@ -34,26 +34,23 @@ exports.AppDataSource = new typeorm_1.DataSource({
     migrations: [path_1.default.join(__dirname, "./migrations/*")],
     ssl: constants_1.PROD_ENV ? { rejectUnauthorized: false } : false,
 });
-const { REDIS_URL, NODE_ENV, USE_REDIS_AUTH, REDIS_HOST, REDIS_PORT, REDIS_USERNAME, REDIS_PASSWORD, } = process.env;
+const { REDIS_HOST, REDIS_PORT, REDIS_USERNAME, REDIS_PASSWORD } = process.env;
 const main = async () => {
     const app = (0, express_1.default)();
     await exports.AppDataSource.initialize();
     await exports.AppDataSource.runMigrations();
     const RedisStore = (0, connect_redis_1.default)(express_session_1.default);
-    let redis = new ioredis_1.default(REDIS_URL);
-    if (NODE_ENV === "production" && USE_REDIS_AUTH === "yes") {
-        redis = new ioredis_1.default({
-            host: REDIS_HOST,
-            port: parseInt(REDIS_PORT),
-            username: REDIS_USERNAME,
-            password: REDIS_PASSWORD,
-        });
-    }
+    let redis = new ioredis_1.default({
+        host: REDIS_HOST,
+        port: parseInt(REDIS_PORT),
+        username: constants_1.PROD_ENV ? REDIS_USERNAME : undefined,
+        password: constants_1.PROD_ENV ? REDIS_PASSWORD : undefined,
+    });
     redis.on("connect", () => {
-        console.log("Connected to redis instance!");
+        console.log("Connected to Redis instance!");
     });
     redis.on("error", (err) => {
-        console.log("Error connecting to redis instance: ", err);
+        console.log("Error connecting to Redis instance: ", err);
     });
     app.set("trust proxy", 1);
     app.use((0, cors_1.default)({

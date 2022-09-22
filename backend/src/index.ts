@@ -33,14 +33,7 @@ export const AppDataSource = new DataSource({
   ssl: PROD_ENV ? { rejectUnauthorized: false } : false,
 });
 
-const {
-  REDIS_URL,
-  NODE_ENV,
-  REDIS_HOST,
-  REDIS_PORT,
-  REDIS_USERNAME,
-  REDIS_PASSWORD,
-} = process.env;
+const { REDIS_HOST, REDIS_PORT, REDIS_USERNAME, REDIS_PASSWORD } = process.env;
 
 const main = async () => {
   const app = express();
@@ -55,21 +48,16 @@ const main = async () => {
   let redis = new Redis({
     host: REDIS_HOST,
     port: parseInt(REDIS_PORT as string),
-    username: REDIS_USERNAME,
-    password: REDIS_PASSWORD,
+    username: PROD_ENV ? REDIS_USERNAME : undefined,
+    password: PROD_ENV ? REDIS_PASSWORD : undefined,
   });
 
-  if (NODE_ENV === "development") {
-    console.log("Redis URL only");
-    redis = new Redis(REDIS_URL as string);
-  }
-
   redis.on("connect", () => {
-    console.log("Connected to redis instance!");
+    console.log("Connected to Redis instance!");
   });
 
   redis.on("error", (err) => {
-    console.log("Error connecting to redis instance: ", err);
+    console.log("Error connecting to Redis instance: ", err);
   });
 
   //this must be here for apollo studio
