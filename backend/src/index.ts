@@ -36,7 +36,6 @@ export const AppDataSource = new DataSource({
 const {
   REDIS_URL,
   NODE_ENV,
-  USE_REDIS_AUTH,
   REDIS_HOST,
   REDIS_PORT,
   REDIS_USERNAME,
@@ -53,15 +52,16 @@ const main = async () => {
 
   const RedisStore = connectRedis(session);
 
-  let redis = new Redis(REDIS_URL as string);
+  let redis = new Redis({
+    host: REDIS_HOST,
+    port: parseInt(REDIS_PORT as string),
+    username: REDIS_USERNAME,
+    password: REDIS_PASSWORD,
+  });
 
-  if (NODE_ENV === "production" && USE_REDIS_AUTH === "yes") {
-    redis = new Redis({
-      host: REDIS_HOST,
-      port: parseInt(REDIS_PORT as string),
-      username: REDIS_USERNAME,
-      password: REDIS_PASSWORD,
-    });
+  if (NODE_ENV === "development") {
+    console.log("Redis URL only");
+    redis = new Redis(REDIS_URL as string);
   }
 
   redis.on("connect", () => {
