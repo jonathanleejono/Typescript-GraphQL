@@ -40,7 +40,7 @@ const main = async () => {
     await exports.AppDataSource.initialize();
     await exports.AppDataSource.runMigrations();
     const RedisStore = (0, connect_redis_1.default)(express_session_1.default);
-    let redis = new ioredis_1.default({
+    const redis = new ioredis_1.default({
         host: REDIS_HOST,
         port: parseInt(REDIS_PORT),
         username: constants_1.PROD_ENV ? REDIS_USERNAME : undefined,
