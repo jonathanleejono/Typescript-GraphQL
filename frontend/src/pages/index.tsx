@@ -7,7 +7,9 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
+import axios from "axios";
 import NextLink from "next/link";
+import { useCallback, useEffect } from "react";
 import EditDeletePostButtons from "../components/EditDeletePostButtons";
 import Layout from "../components/Layout";
 import { UpdootSection } from "../components/UpdootSection";
@@ -15,6 +17,22 @@ import { usePostsQuery } from "../generated/graphql";
 import { withApollo } from "../utils/withApollo";
 
 const Index = () => {
+  let pingApiUrl = process.env.NEXT_PUBLIC_API_URL as string;
+
+  if (pingApiUrl.includes("/graphql")) {
+    pingApiUrl.replace("/graphql", "/ping");
+  } else {
+    pingApiUrl += "/ping";
+  }
+
+  const wakeup = useCallback(async () => {
+    await axios.get(`${pingApiUrl}`);
+  }, []);
+
+  useEffect(() => {
+    wakeup();
+  }, []);
+
   const { data, error, loading, fetchMore, variables } = usePostsQuery({
     variables: {
       limit: 15,

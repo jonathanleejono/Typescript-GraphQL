@@ -45,7 +45,7 @@ const main = async () => {
 
   const RedisStore = connectRedis(session);
 
-  let redis = new Redis({
+  const redis = new Redis({
     host: REDIS_HOST,
     port: parseInt(REDIS_PORT as string),
     username: PROD_ENV ? REDIS_USERNAME : undefined,
