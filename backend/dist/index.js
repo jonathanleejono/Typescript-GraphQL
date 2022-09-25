@@ -34,7 +34,7 @@ exports.AppDataSource = new typeorm_1.DataSource({
     migrations: [path_1.default.join(__dirname, "./migrations/*")],
     ssl: constants_1.PROD_ENV ? { rejectUnauthorized: false } : false,
 });
-const { REDIS_HOST, REDIS_PORT, REDIS_USERNAME, REDIS_PASSWORD } = process.env;
+const { REDIS_HOST, REDIS_PORT, REDIS_USERNAME, REDIS_PASSWORD, CORS_ORIGIN, STUDIO_APOLLO, } = process.env;
 const main = async () => {
     const app = (0, express_1.default)();
     await exports.AppDataSource.initialize();
@@ -54,30 +54,17 @@ const main = async () => {
     });
     app.set("trust proxy", 1);
     app.use((0, cors_1.default)({
-        origin: [
-            process.env.CORS_ORIGIN,
-            process.env.PING_CHECKER,
-            process.env.STUDIO_APOLLO,
-        ],
+        origin: [CORS_ORIGIN, STUDIO_APOLLO],
         credentials: true,
     }));
-    const usingApolloStudio = true;
-    let usingLocalHost = false;
-    app.use((req, _, next) => {
-        var _a;
-        if ((_a = req.headers.origin) === null || _a === void 0 ? void 0 : _a.toString().includes("http://localhost")) {
-            usingLocalHost = true;
-        }
-        next();
-    });
     app.use((0, express_session_1.default)({
         name: constants_1.COOKIE_NAME,
         store: new RedisStore({ client: redis, disableTouch: true }),
         cookie: {
             maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
             httpOnly: true,
-            sameSite: (usingApolloStudio || constants_1.PROD_ENV) && !usingLocalHost ? "none" : "lax",
-            secure: (usingApolloStudio || constants_1.PROD_ENV) && !usingLocalHost ? true : false,
+            sameSite: constants_1.USE_STUDIO_APOLLO || constants_1.PROD_ENV ? "none" : "lax",
+            secure: constants_1.USE_STUDIO_APOLLO || constants_1.PROD_ENV ? true : false,
         },
         secret: process.env.SECRET,
         resave: false,

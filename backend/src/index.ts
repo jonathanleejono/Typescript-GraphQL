@@ -2,13 +2,13 @@ import { ApolloServer } from "apollo-server-express";
 import connectRedis from "connect-redis";
 import cors from "cors";
 import dotenv from "dotenv";
-import express, { NextFunction, Request, Response } from "express";
+import express from "express";
 import session from "express-session";
 import Redis from "ioredis";
 import path from "path";
 import { buildSchema } from "type-graphql";
 import { DataSource } from "typeorm";
-import { COOKIE_NAME, PROD_ENV } from "./constants";
+import { COOKIE_NAME, PROD_ENV, USE_STUDIO_APOLLO } from "./constants";
 import { Post } from "./entities/Post";
 import { Updoot } from "./entities/Updoot";
 import { User } from "./entities/User";
@@ -33,7 +33,14 @@ export const AppDataSource = new DataSource({
   ssl: PROD_ENV ? { rejectUnauthorized: false } : false,
 });
 
-const { REDIS_HOST, REDIS_PORT, REDIS_USERNAME, REDIS_PASSWORD } = process.env;
+const {
+  REDIS_HOST,
+  REDIS_PORT,
+  REDIS_USERNAME,
+  REDIS_PASSWORD,
+  CORS_ORIGIN,
+  STUDIO_APOLLO,
+} = process.env;
 
 const main = async () => {
   const app = express();
@@ -65,25 +72,10 @@ const main = async () => {
 
   app.use(
     cors({
-      origin: [
-        process.env.CORS_ORIGIN as string,
-        process.env.PING_CHECKER as string,
-        process.env.STUDIO_APOLLO as string,
-      ],
+      origin: [CORS_ORIGIN as string, STUDIO_APOLLO as string],
       credentials: true,
     })
   );
-
-  const usingApolloStudio = true;
-
-  let usingLocalHost = false;
-
-  app.use((req: Request, _: Response, next: NextFunction) => {
-    if (req.headers.origin?.toString().includes("http://localhost")) {
-      usingLocalHost = true;
-    }
-    next();
-  });
 
   // this needs to come before apollo for the
   // session middleware to be used inside of apollo
@@ -94,10 +86,8 @@ const main = async () => {
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
         httpOnly: true,
-        sameSite:
-          (usingApolloStudio || PROD_ENV) && !usingLocalHost ? "none" : "lax", //must be lax for localhost frontend, none for apollo studio
-        secure:
-          (usingApolloStudio || PROD_ENV) && !usingLocalHost ? true : false, // must be false for localhost frontend, true for apollo studio
+        sameSite: USE_STUDIO_APOLLO || PROD_ENV ? "none" : "lax",
+        secure: USE_STUDIO_APOLLO || PROD_ENV ? true : false,
       },
       secret: process.env.SECRET as string,
       resave: false,
