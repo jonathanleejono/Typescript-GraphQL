@@ -6,8 +6,6 @@ The is project is based on Ben Awad’s Typescript GraphQL tutorial here: https:
 
 Cookies can be tricky to deal with when using Studio Apollo and GraphQL. In the case of Studio Apollo the settings need to be "sameSite='none'", and "secure=true", as well as the headers in Studio Apollo need to use a key "x-forwarded-proto" with a value "https". If using a frontend with the API, ensure "credentials: 'include'" are used for the Apollo frontend client. As well as, the backend's cookie settings must be changed to "secure=false" and "sameSite='lax'" (or 'strict') if using HTTP (eg. using localhost either with a local frontend or an HTTP link in an API client like Postman). The backend's 'app.set("trust proxy", 1)' setting is also used for cookies.
 
-Check out the live app here: https://typescript-graphql-posts.vercel.app/
-
 ### Backend:
 
 - Express
